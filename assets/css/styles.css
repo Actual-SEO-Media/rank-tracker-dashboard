@@ -1,0 +1,73 @@
+/* Custom styles beyond Tailwind */
+
+/* Truncate long URLs in tables */
+/* .truncate-url {
+    max-width: 300px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: inline-block;
+}
+
+input[type="file"] {
+    padding: 0.5rem;
+    line-height: 1.2;
+}
+
+
+.rank-up {
+    color: #10b981; 
+    font-weight: 500;
+}
+
+.rank-down {
+    color: #ef4444; 
+    font-weight: 500;
+}
+
+.rank-same {
+    color: #6b7280; 
+}
+
+html, body {
+    height: 100%;
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+}
+
+main {
+    flex: 1 0 auto;
+}
+
+footer {
+    flex-shrink: 0;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+}
+
+.overflow-x-auto::-webkit-scrollbar {
+    height: 8px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-track {
+    background: #f1f1f1;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb {
+    background: #cbd5e0;
+    border-radius: 4px;
+}
+
+.overflow-x-auto::-webkit-scrollbar-thumb:hover {
+    background: #a0aec0;
+} 
+
+*/
+
