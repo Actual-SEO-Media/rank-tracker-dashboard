@@ -299,7 +299,7 @@ include 'includes/header.php';
                     placeholder-slate-400
                     focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
              required>
-      <p class="text-sm text-slate-500 mt-1">Example: astrocityscrap.com</p>
+      <p class="text-sm text-slate-500 mt-1">Example: actualseomedia.com</p>
     </div>
     
     <div>
@@ -335,6 +335,17 @@ include 'includes/header.php';
           <input id="csv_file" name="csv_file" type="file" accept=".csv" class="hidden" required />
         </label>
       </div>
+    </div>
+    <!-- Add this to the import form, below the report_period field -->
+    <div>
+        <div class="flex items-center mt-4">
+            <input type="checkbox" id="is_baseline" name="is_baseline" value="1" 
+                class="h-4 w-4 text-blue-600 focus:ring-blue-500 border-gray-300 rounded">
+            <label for="is_baseline" class="ml-2 block text-sm text-gray-700">
+                Mark as baseline report
+            </label>
+        </div>
+        <p class="text-sm text-gray-500 mt-1">First client report</p>
     </div>
     
     <div class="pt-4">
