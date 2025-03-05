@@ -1,5 +1,6 @@
 <?php
 require_once __DIR__ . '/../config/database.php';
+require_once __DIR__ . '/../config/EngineConfig.php';
 
 class SearchData {
     private $conn;
@@ -164,19 +165,10 @@ class SearchData {
         return $stats;
     }
     
-    // Helper method to get the table name for an engine
     private function getTableName($engine) {
-        switch ($engine) {
-            case 'google':
-                return 'google_data';
-            case 'bing':
-                return 'bing_data';
-            case 'yahoo':
-                return 'yahoo_data';
-            case 'google_mobile':
-                return 'google_mobile_data';
-            default:
-                throw new Exception("Invalid search engine: " . $engine);
-        }
+        if (!in_array($engine, EngineConfig::getEngineKeys())) {
+            throw new Exception("Invalid search engine: " . $engine);
     }
+    return $engine . '_data';
+}
 }

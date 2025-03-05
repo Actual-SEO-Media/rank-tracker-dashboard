@@ -18,348 +18,123 @@
     <!-- Tabs for different search engines -->
     <div class="mb-4 border-b">
         <ul class="flex flex-wrap -mb-px" id="seoTabs" role="tablist">
-            <li class="mr-2" role="presentation">
-                <button class="inline-block py-2 px-4 text-blue-600 hover:text-blue-800 font-medium border-b-2 border-blue-600 rounded-t-lg active" 
-                        id="google-tab" data-tabs-target="#google" type="button" role="tab" aria-controls="google" aria-selected="true">
-                    Google (<?php echo count($google_data); ?>)
-                </button>
-            </li>
-            <li class="mr-2" role="presentation">
-                <button class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent rounded-t-lg" 
-                        id="google-mobile-tab" data-tabs-target="#google-mobile" type="button" role="tab" aria-controls="google-mobile" aria-selected="false">
-                    Google Mobile (<?php echo count($google_mobile_data); ?>)
-                </button>
-            </li>
-            <li class="mr-2" role="presentation">
-                <button class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent rounded-t-lg" 
-                        id="yahoo-tab" data-tabs-target="#yahoo" type="button" role="tab" aria-controls="yahoo" aria-selected="false">
-                    Yahoo (<?php echo count($yahoo_data); ?>)
-                </button>
-            </li>
-            <li role="presentation">
-                <button class="inline-block py-2 px-4 text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent rounded-t-lg" 
-                        id="bing-tab" data-tabs-target="#bing" type="button" role="tab" aria-controls="bing" aria-selected="false">
-                    Bing (<?php echo count($bing_data); ?>)
-                </button>
-            </li>
+            <?php 
+            $engines = [
+                'google' => 'Google',
+                'google_mobile' => 'Google Mobile',
+                'yahoo' => 'Yahoo',
+                'bing' => 'Bing'
+            ];
+            
+            $first = true;
+            foreach ($engines as $key => $label): 
+                $var_name = "{$key}_data";
+                $count = isset($$var_name) ? count($$var_name) : 0;
+            ?>
+                <li class="mr-2" role="presentation">
+                    <button class="inline-block py-2 px-4 <?php echo $first ? 'text-blue-600 hover:text-blue-800 font-medium border-b-2 border-blue-600 active' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent'; ?> rounded-t-lg" 
+                            id="<?php echo $key; ?>-tab" data-tabs-target="#<?php echo $key; ?>" type="button" role="tab" 
+                            aria-controls="<?php echo $key; ?>" aria-selected="<?php echo $first ? 'true' : 'false'; ?>">
+                        <?php echo $label; ?> (<?php echo $count; ?>)
+                    </button>
+                </li>
+            <?php 
+                $first = false;
+            endforeach; 
+            ?>
         </ul>
     </div>
     
-     <!-- Tab content -->
+    <!-- Tab content -->
     <div id="tabContent">
-        <!-- Google Tab -->
-        <div class="block" id="google" role="tabpanel" aria-labelledby="google-tab">
-            <?php if (empty($google_data)): ?>
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
-                    <p>No Google rankings available for this report.</p>
-                </div>
-            <?php else: ?>
-                <!-- Filter/search controls -->
-                <div class="mb-4 flex flex-wrap items-center gap-4">
-                    <div class="relative">
-                        <input type="text" id="google-search" placeholder="Search keywords..." 
-                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                               onkeyup="filterTable('google-table', this.value)">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
+        <?php 
+        $first = true;
+        foreach ($engines as $key => $label): 
+            $var_name = "{$key}_data";
+            $data = isset($$var_name) ? $$var_name : [];
+        ?>
+            <div class="<?php echo $first ? 'block' : 'hidden'; ?>" id="<?php echo $key; ?>" role="tabpanel" aria-labelledby="<?php echo $key; ?>-tab">
+                <?php if (empty($data)): ?>
+                    <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
+                        <p>No <?php echo $label; ?> rankings available for this report.</p>
+                    </div>
+                <?php else: ?>
+                    <!-- Filter/search controls -->
+                    <div class="mb-4 flex flex-wrap items-center gap-4">
+                        <div class="relative">
+                            <input type="text" id="<?php echo $key; ?>-search" placeholder="Search keywords..." 
+                                   class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                                   onkeyup="filterTable('<?php echo $key; ?>-table', this.value)">
+                            <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
+                                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
+                                    <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
+                                </svg>
+                            </div>
                         </div>
+                        
+                        <select id="<?php echo $key; ?>-rank-filter" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
+                                onchange="filterRank('<?php echo $key; ?>-table', this.value)">
+                            <option value="0">All rankings</option>
+                            <option value="10">Top 10</option>
+                            <option value="20">Top 20</option>
+                            <option value="50">Top 50</option>
+                            <option value="100">Top 100</option>
+                        </select>
+                        
+                        <button onclick="sortTable('<?php echo $key; ?>-table', 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
+                            Sort by Rank
+                        </button>
+                        
+                        <button onclick="sortTable('<?php echo $key; ?>-table', 3, true)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
+                            Sort by Change
+                        </button>
                     </div>
                     
-                    <select id="google-rank-filter" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="filterRank('google-table', this.value)">
-                        <option value="0">All rankings</option>
-                        <option value="10">Top 10</option>
-                        <option value="20">Top 20</option>
-                        <option value="50">Top 50</option>
-                        <option value="100">Top 100</option>
-                    </select>
-                    
-                    <button onclick="sortTable('google-table', 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Rank
-                    </button>
-                    
-                    <button onclick="sortTable('google-table', 3, true)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Change
-                    </button>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table id="google-table" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($google_data as $row): ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
-                                     <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
-                                        <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
-                                            <?php echo htmlspecialchars($row['url']); ?>
-                                        </a>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>"><?php echo $row['rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['previous_rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
-                                        <?php if ($row['difference'] > 0): ?>
-                                            <span class="text-green-600">+<?php echo $row['difference']; ?></span>
-                                        <?php elseif ($row['difference'] < 0): ?>
-                                            <span class="text-red-600"><?php echo $row['difference']; ?></span>
-                                        <?php else: ?>
-                                            <span class="text-gray-500">0</span>
-                                        <?php endif; ?>
-                                    </td>
-                                   
+                    <div class="overflow-x-auto">
+                        <table id="<?php echo $key; ?>-table" class="min-w-full divide-y divide-gray-200">
+                            <thead class="bg-gray-50">
+                                <tr>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous</th>
+                                    <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
                                 </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Google Mobile Tab -->
-        <div class="hidden" id="google-mobile" role="tabpanel" aria-labelledby="google-mobile-tab">
-            <?php if (empty($google_mobile_data)): ?>
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
-                    <p>No Google Mobile rankings available for this report.</p>
-                </div>
-            <?php else: ?>
-                <!-- Filter/search controls -->
-                <div class="mb-4 flex flex-wrap items-center gap-4">
-                    <div class="relative">
-                        <input type="text" id="mobile-search" placeholder="Search keywords..." 
-                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                               onkeyup="filterTable('mobile-table', this.value)">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
+                            </thead>
+                            <tbody class="bg-white divide-y divide-gray-200">
+                                <?php foreach ($data as $row): ?>
+                                    <tr class="hover:bg-gray-50">
+                                        <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
+                                        <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
+                                            <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
+                                                <?php echo htmlspecialchars($row['url']); ?>
+                                            </a>
+                                        </td>
+                                        <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>"><?php echo $row['rank']; ?></td>
+                                        <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['previous_rank']; ?></td>
+                                        <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
+                                            <?php if ($row['difference'] > 0): ?>
+                                                <span class="text-green-600">+<?php echo $row['difference']; ?></span>
+                                            <?php elseif ($row['difference'] < 0): ?>
+                                                <span class="text-red-600"><?php echo $row['difference']; ?></span>
+                                            <?php else: ?>
+                                                <span class="text-gray-500">0</span>
+                                            <?php endif; ?>
+                                        </td>
+                                    </tr>
+                                <?php endforeach; ?>
+                            </tbody>
+                        </table>
                     </div>
-                    
-                    <select id="mobile-rank-filter" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="filterRank('mobile-table', this.value)">
-                        <option value="0">All rankings</option>
-                        <option value="10">Top 10</option>
-                        <option value="20">Top 20</option>
-                        <option value="50">Top 50</option>
-                        <option value="100">Top 100</option>
-                    </select>
-                    
-                    <button onclick="sortTable('mobile-table', 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Rank
-                    </button>
-                    
-                    <button onclick="sortTable('mobile-table', 3, true)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Change
-                    </button>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table id="mobile-table" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($google_mobile_data as $row): ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
-                                     <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
-                                        <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
-                                            <?php echo htmlspecialchars($row['url']); ?>
-                                        </a>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>"><?php echo $row['rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['previous_rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
-                                        <?php if ($row['difference'] > 0): ?>
-                                            <span class="text-green-600">+<?php echo $row['difference']; ?></span>
-                                        <?php elseif ($row['difference'] < 0): ?>
-                                            <span class="text-red-600"><?php echo $row['difference']; ?></span>
-                                        <?php else: ?>
-                                            <span class="text-gray-500">0</span>
-                                        <?php endif; ?>
-                                    </td>
-                                   
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Yahoo Tab -->
-        <div class="hidden" id="yahoo" role="tabpanel" aria-labelledby="yahoo-tab">
-            <?php if (empty($yahoo_data)): ?>
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
-                    <p>No Yahoo rankings available for this report.</p>
-                </div>
-            <?php else: ?>
-                <!-- Filter/search controls -->
-                <div class="mb-4 flex flex-wrap items-center gap-4">
-                    <div class="relative">
-                        <input type="text" id="yahoo-search" placeholder="Search keywords..." 
-                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                               onkeyup="filterTable('yahoo-table', this.value)">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                    </div>
-                    
-                    <select id="yahoo-rank-filter" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="filterRank('yahoo-table', this.value)">
-                        <option value="0">All rankings</option>
-                        <option value="10">Top 10</option>
-                        <option value="20">Top 20</option>
-                        <option value="50">Top 50</option>
-                        <option value="100">Top 100</option>
-                    </select>
-                    
-                    <button onclick="sortTable('yahoo-table', 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Rank
-                    </button>
-                    
-                    <button onclick="sortTable('yahoo-table', 3, true)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Change
-                    </button>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table id="yahoo-table" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($yahoo_data as $row): ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
-                                      <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
-                                        <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
-                                            <?php echo htmlspecialchars($row['url']); ?>
-                                        </a>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>"><?php echo $row['rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['previous_rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
-                                        <?php if ($row['difference'] > 0): ?>
-                                            <span class="text-green-600">+<?php echo $row['difference']; ?></span>
-                                        <?php elseif ($row['difference'] < 0): ?>
-                                            <span class="text-red-600"><?php echo $row['difference']; ?></span>
-                                        <?php else: ?>
-                                            <span class="text-gray-500">0</span>
-                                        <?php endif; ?>
-                                    </td>
-                                  
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </div>
-        
-        <!-- Bing Tab -->
-        <div class="hidden" id="bing" role="tabpanel" aria-labelledby="bing-tab">
-            <?php if (empty($bing_data)): ?>
-                <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
-                    <p>No Bing rankings available for this report.</p>
-                </div>
-            <?php else: ?>
-                <!-- Filter/search controls -->
-                <div class="mb-4 flex flex-wrap items-center gap-4">
-                    <div class="relative">
-                        <input type="text" id="bing-search" placeholder="Search keywords..." 
-                               class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
-                               onkeyup="filterTable('bing-table', this.value)">
-                        <div class="absolute inset-y-0 right-0 flex items-center pr-3 pointer-events-none">
-                            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-400" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M8 4a4 4 0 100 8 4 4 0 000-8zM2 8a6 6 0 1110.89 3.476l4.817 4.817a1 1 0 01-1.414 1.414l-4.816-4.816A6 6 0 012 8z" clip-rule="evenodd" />
-                            </svg>
-                        </div>
-                    </div>
-                    
-                    <select id="bing-rank-filter" class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500"
-                            onchange="filterRank('bing-table', this.value)">
-                        <option value="0">All rankings</option>
-                        <option value="10">Top 10</option>
-                        <option value="20">Top 20</option>
-                        <option value="50">Top 50</option>
-                        <option value="100">Top 100</option>
-                    </select>
-                    
-                    <button onclick="sortTable('bing-table', 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Rank
-                    </button>
-                    
-                    <button onclick="sortTable('bing-table', 3, true)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                        Sort by Change
-                    </button>
-                </div>
-                
-                <div class="overflow-x-auto">
-                    <table id="bing-table" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Keyword</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">URL</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Rank</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Previous</th>
-                                <th class="px-4 py-2 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Change</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200">
-                            <?php foreach ($bing_data as $row): ?>
-                                <tr class="hover:bg-gray-50">
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
-                                     <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
-                                        <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
-                                            <?php echo htmlspecialchars($row['url']); ?>
-                                        </a>
-                                    </td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>"><?php echo $row['rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['previous_rank']; ?></td>
-                                    <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
-                                        <?php if ($row['difference'] > 0): ?>
-                                            <span class="text-green-600">+<?php echo $row['difference']; ?></span>
-                                        <?php elseif ($row['difference'] < 0): ?>
-                                            <span class="text-red-600"><?php echo $row['difference']; ?></span>
-                                        <?php else: ?>
-                                            <span class="text-gray-500">0</span>
-                                        <?php endif; ?>
-                                    </td>
-                                   
-                                </tr>
-                            <?php endforeach; ?>
-                        </tbody>
-                    </table>
-                </div>
-            <?php endif; ?>
-        </div>
+                <?php endif; ?>
+            </div>
+        <?php 
+            $first = false;
+        endforeach; 
+        ?>
     </div>
 </div>
+
 </div>
 
 <!-- JavaScript for tab switching and table functionality -->
