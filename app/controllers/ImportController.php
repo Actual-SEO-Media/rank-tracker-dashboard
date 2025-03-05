@@ -12,7 +12,10 @@ class ImportController {
         $this->searchDataModel = new SearchData();
     }
     
-    // Display import form
+    /**
+     * Displays the import form and handles form submission.
+     * If a file is uploaded, it processes the import and returns success or error messages.
+     */ 
     public function index() {
         $domain = isset($_GET['domain']) ? $_GET['domain'] : '';
         $success = false;
@@ -31,7 +34,10 @@ class ImportController {
         include __DIR__ . '/../views/import/index.php';
     }
     
-    // Process CSV import
+    /**
+     * Displays the import form and handles form submission.
+     * If a file is uploaded, it processes the import and returns success or error messages.
+     */
     private function processImport() {
         $result = [
             'success' => false,
@@ -159,7 +165,13 @@ class ImportController {
         return $result;
     }
     
-    // Process CSV file
+      /**
+     * Processes the CSV file and saves data to the database.
+     * 
+     * @param string $filepath Path to the CSV file
+     * @param int $report_id Report ID for storing data
+     * @return bool Returns true on success, false on failure
+     */
     private function processCSV($filepath, $report_id) {
         if (($handle = fopen($filepath, "r")) === FALSE) {
             return false;
@@ -244,7 +256,6 @@ class ImportController {
                     $this->searchDataModel->serp_features = $data[$engineIndexes['serp']] ?? '';
                     $this->searchDataModel->url = $data[$engineIndexes['url']] ?? '';
                     
-                    // Save to database
                     $this->searchDataModel->save($engine);
                 }
             }
@@ -253,8 +264,12 @@ class ImportController {
         fclose($handle);
         return true;
     }
-    
-    // Find all column indexes in the CSV headers
+      /**
+     * Processes the CSV file and saves data to the database.
+     * 
+     * @param string $filepath Path to the CSV file
+     * @param int $report_id Report ID for storing data
+     */
     private function findColumnIndexes($headers) {
         $indexes = [
             'keyword' => array_search('Keyword', $headers),
