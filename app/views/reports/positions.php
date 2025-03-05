@@ -54,7 +54,6 @@
         </ul>
     </div>
     
-    <!-- Tab content -->
      <!-- Tab content -->
     <div id="tabContent">
         <!-- Google Tab -->

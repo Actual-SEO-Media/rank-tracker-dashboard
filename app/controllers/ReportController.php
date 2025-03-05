@@ -46,7 +46,30 @@ class ReportController {
         // Include the view
         include __DIR__ . '/../views/reports/details.php';
     }
-    
+
+        /**
+     * Get report ID by client domain and period
+     * 
+     * @param string $domain The client domain
+     * @param string $period The period in YYYY-MM format
+     * @return int|false The report ID if found, false otherwise
+     */
+    public function getReportIdByPeriod($domain, $period) {
+        return $this->reportModel->getReportIdByPeriod($domain, $period);
+    }
+
+    /**
+     * Get all available periods for a client domain
+     * 
+     * @param string $domain The client domain
+     * @param int $limit Optional limit on how many periods to return (default 12)
+     * @return array Array of period data with 'period' and 'report_id' fields
+     */
+    public function getAvailablePeriods($domain, $limit = 12) {
+        return $this->reportModel->getAvailablePeriods($domain, $limit);
+    }
+        
+        
     // Display search positions
     public function positions($id) {
         // Get report data
@@ -112,4 +135,5 @@ class ReportController {
         
         return array_slice($improved, 0, 5);
     }
+    
 }

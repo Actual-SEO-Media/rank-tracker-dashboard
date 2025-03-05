@@ -158,6 +158,60 @@ class Report {
     
     return $stmt->execute();
 }
+    /**
+     * Get report ID by client domain and period
+     * 
+     * @param string $domain The client domain
+     * @param string $period The period in YYYY-MM format
+     * @return int|false The report ID if found, false otherwise
+     */
+    public function getReportIdByPeriod($domain, $period) {
+        $query = "SELECT report_id FROM " . $this->table . " 
+                WHERE client_domain = ? 
+                AND report_period = ?
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("ss", $domain, $period);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        if ($result && $result->num_rows > 0) {
+            $row = $result->fetch_assoc();
+            return $row['report_id'];
+        }
+        
+        return false;
+    }
+
+    /**
+     * Get all available periods for a client domain
+     * 
+     * @param string $domain The client domain
+     * @param int $limit Optional limit on how many periods to return (default 12)
+     * @return array Array of period data with 'period' and 'report_id' fields
+     */
+    public function getAvailablePeriods($domain, $limit = 12) {
+        $query = "SELECT report_period as period, report_id 
+                FROM " . $this->table . " 
+                WHERE client_domain = ? 
+                ORDER BY report_period DESC 
+                LIMIT ?";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->bind_param("si", $domain, $limit);
+        $stmt->execute();
+        $result = $stmt->get_result();
+        
+        $periods = array();
+        if ($result) {
+            while ($row = $result->fetch_assoc()) {
+                $periods[] = $row;
+            }
+        }
+        
+        return $periods;
+    }
 
     public function setBaseline($isBaseline = true) {
     // First clear existing baseline if setting a new one
