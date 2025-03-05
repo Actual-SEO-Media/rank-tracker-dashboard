@@ -1,46 +1,12 @@
-<?php
-// Include functions
-require_once 'includes/functions.php';
+<?php include __DIR__ . '/../layout/header.php'; ?>
 
-// Check if domain parameter exists
-if (!isset($_GET['domain']) || empty($_GET['domain'])) {
-    // Redirect to index if no domain provided
-    header('Location: index.php');
-    exit;
-}
-
-$domain = $_GET['domain'];
-
-// Get client reports
-$reports = getClientReports($domain);
-
-// Get some stats
-$totalReports = count($reports);
-$latestReport = !empty($reports) ? $reports[0] : null;
-
-// Page title
-$page_title = "Reports for " . htmlspecialchars($domain);
-
-// Include header
-include 'includes/header.php';
-?>
-
-<div class="flex items-center justify-between mb-6">
-    <div class="flex items-center">
-        <a href="index.php" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
-            <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
-                <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
-            </svg>
-        </a>
-        <h1 class="text-2xl font-bold text-gray-800"><?php echo htmlspecialchars($domain); ?></h1>
-    </div>
-    
-    <a href="import.php?domain=<?php echo urlencode($domain); ?>" class="bg-blue-500 hover:bg-blue-600 text-white px-4 py-2 rounded-md flex items-center">
-        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M3 17a1 1 0 011-1h12a1 1 0 110 2H4a1 1 0 01-1-1zM6.293 6.707a1 1 0 010-1.414l3-3a1 1 0 011.414 0l3 3a1 1 0 01-1.414 1.414L11 5.414V13a1 1 0 11-2 0V5.414L7.707 6.707a1 1 0 01-1.414 0z" clip-rule="evenodd" />
+<div class="flex items-center mb-6">
+    <a href="index.php" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
+            <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
-        Import New Report
     </a>
+    <h1 class="text-2xl font-bold text-gray-800"><?php echo htmlspecialchars($domain); ?></h1>
 </div>
 
 <!-- Stats Cards -->
@@ -54,7 +20,7 @@ include 'includes/header.php';
             </div>
             <div>
                 <p class="text-sm text-gray-500 mb-1">Total Reports</p>
-                <p class="text-xl font-semibold"><?php echo $totalReports; ?></p>
+                <p class="text-xl font-semibold"><?php echo count($reports); ?></p>
             </div>
         </div>
     </div>
@@ -69,7 +35,11 @@ include 'includes/header.php';
             <div>
                 <p class="text-sm text-gray-500 mb-1">Latest Report</p>
                 <p class="text-xl font-semibold">
-                    <?php echo $latestReport ? formatReportPeriod($latestReport['report_period']) : 'N/A'; ?>
+                    <?php 
+                    echo !empty($reports) 
+                        ? date('F Y', strtotime($reports[0]['report_period'] . '-01'))
+                        : 'N/A'; 
+                    ?>
                 </p>
             </div>
         </div>
@@ -85,7 +55,11 @@ include 'includes/header.php';
             <div>
                 <p class="text-sm text-gray-500 mb-1">Last Updated</p>
                 <p class="text-xl font-semibold">
-                    <?php echo $latestReport ? date('M j, Y', strtotime($latestReport['import_date'])) : 'N/A'; ?>
+                    <?php 
+                    echo !empty($reports) 
+                        ? date('M j, Y', strtotime($reports[0]['import_date']))
+                        : 'N/A'; 
+                    ?>
                 </p>
             </div>
         </div>
@@ -97,10 +71,10 @@ include 'includes/header.php';
         <h2 class="text-xl font-semibold text-gray-700">Report History</h2>
         <div class="flex items-center">
             <span class="bg-blue-100 text-blue-800 text-sm font-medium py-1 px-3 rounded-full mr-2">
-                <?php echo $totalReports; ?> Reports
+                <?php echo count($reports); ?> Reports
             </span>
-            <?php if ($totalReports > 0): ?>
-                <a href="report-details.php?id=<?php echo $latestReport['report_id']; ?>" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">
+            <?php if (!empty($reports)): ?>
+                <a href="index.php?action=details&id=<?php echo $reports[0]['report_id']; ?>" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">
                     View Latest
                 </a>
             <?php endif; ?>
@@ -120,7 +94,7 @@ include 'includes/header.php';
                         No reports found for this client. Import data to get started.
                     </p>
                     <div class="mt-2">
-                        <a href="import.php?domain=<?php echo urlencode($domain); ?>" class="text-sm font-medium text-yellow-700 hover:text-yellow-600">
+                        <a href="index.php?action=import&domain=<?php echo urlencode($domain); ?>" class="text-sm font-medium text-yellow-700 hover:text-yellow-600">
                             Import your first report &rarr;
                         </a>
                     </div>
@@ -139,10 +113,7 @@ include 'includes/header.php';
                             Import Date
                         </th>
                         <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Google Keywords
-                        </th>
-                        <th scope="col" class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                            Bing Keywords
+                            Status
                         </th>
                         <th scope="col" class="px-6 py-3 text-center text-xs font-medium text-gray-500 uppercase tracking-wider">
                             Actions
@@ -151,11 +122,6 @@ include 'includes/header.php';
                 </thead>
                 <tbody class="bg-white divide-y divide-gray-200">
                     <?php foreach ($reports as $report): ?>
-                        <?php
-                        // Get keyword counts for each search engine
-                        $google_count = getKeywordCount($report['report_id'], 'google_data');
-                        $bing_count = getKeywordCount($report['report_id'], 'bing_data');
-                        ?>
                         <tr class="hover:bg-gray-50">
                             <td class="px-6 py-4 whitespace-nowrap">
                                 <div class="flex items-center">
@@ -166,7 +132,7 @@ include 'includes/header.php';
                                     </div>
                                     <div class="ml-3">
                                         <div class="text-sm font-medium text-gray-900">
-                                            <?php echo formatReportPeriod($report['report_period']); ?>
+                                            <?php echo date('F Y', strtotime($report['report_period'] . '-01')); ?>
                                         </div>
                                     </div>
                                 </div>
@@ -180,29 +146,18 @@ include 'includes/header.php';
                                 </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap">
-                                <?php if ($google_count > 0): ?>
-                                    <span class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                                        <?php echo $google_count; ?> keywords
+                                <?php if ($report['is_baseline']): ?>
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                                        Baseline
                                     </span>
                                 <?php else: ?>
-                                    <span class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        No data
-                                    </span>
-                                <?php endif; ?>
-                            </td>
-                            <td class="px-6 py-4 whitespace-nowrap">
-                                <?php if ($bing_count > 0): ?>
-                                    <span class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
-                                        <?php echo $bing_count; ?> keywords
-                                    </span>
-                                <?php else: ?>
-                                    <span class="px-2 inline-flex text-sm leading-5 font-semibold rounded-full bg-gray-100 text-gray-800">
-                                        No data
+                                    <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-blue-100 text-blue-800">
+                                        Standard
                                     </span>
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <a href="report-details.php?id=<?php echo $report['report_id']; ?>" 
+                                <a href="index.php?action=details&id=<?php echo $report['report_id']; ?>" 
                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md text-sm font-medium">
                                     View Details
                                 </a>
@@ -215,24 +170,4 @@ include 'includes/header.php';
     <?php endif; ?>
 </div>
 
-<?php
-// Function to get keyword count for a report/search engine
-function getKeywordCount($report_id, $table) {
-    global $conn;
-    
-    $sql = "SELECT COUNT(*) as count FROM $table WHERE report_id = ?";
-    $stmt = $conn->prepare($sql);
-    $stmt->bind_param("i", $report_id);
-    $stmt->execute();
-    $result = $stmt->get_result();
-    
-    if ($row = $result->fetch_assoc()) {
-        return $row['count'];
-    }
-    
-    return 0;
-}
-
-// Include footer
-include 'includes/footer.php';
-?>
+<?php include __DIR__ . '/../layout/footer.php'; ?>
