@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Report.php';
 require_once __DIR__ . '/../models/SearchData.php';
+require_once __DIR__ . '/../config/EngineConfig.php';
 
 class ReportController {
     private $reportModel;
@@ -20,11 +21,34 @@ class ReportController {
             exit;
         }
         
-        // Get search data for different engines
-        $google_data = $this->getFilteredSearchData($id, 'google');
-        $google_mobile_data = $this->getFilteredSearchData($id, 'google_mobile');
-        $yahoo_data = $this->getFilteredSearchData($id, 'yahoo');
-        $bing_data = $this->getFilteredSearchData($id, 'bing');
+        $engineData = [];
+        foreach (EngineConfig::getEngineKeys() as $engine) {
+            $engineData[$engine] = $this->getFilteredSearchData($id, $engine);
+        }
+        
+        // For backward compatibility with existing view templates
+        $google_data = $engineData['google'] ?? [];
+        $google_mobile_data = $engineData['google_mobile'] ?? [];
+        $yahoo_data = $engineData['yahoo'] ?? [];
+        $bing_data = $engineData['bing'] ?? [];
+
+        $period = $this->reportModel->report_period;
+        $domain = $this->reportModel->client_domain;
+
+        $prev_period = date('Y-m', strtotime($period . '-01 -1 month'));
+        $prev_report_id = $this->getReportIdByPeriod($domain, $prev_period);
+
+        $next_period = date('Y-m', strtotime($period . '-01 +1 month'));
+        $next_report_id = $this->getReportIdByPeriod($domain, $next_period);
+
+        $available_periods = $this->getAvailablePeriods($domain);
+        
+        // Add to data going to the view
+        $navigation = [
+            'prev_report_id' => $prev_report_id,
+            'next_report_id' => $next_report_id,
+            'available_periods' => $available_periods
+        ];
         
         // Calculate report statistics
         $stats = $this->searchDataModel->calculateReportStats($id);
@@ -42,34 +66,10 @@ class ReportController {
             'is_baseline' => $this->reportModel->is_baseline
         ];
         
-       
         // Include the view
         include __DIR__ . '/../views/reports/details.php';
     }
-
-        /**
-     * Get report ID by client domain and period
-     * 
-     * @param string $domain The client domain
-     * @param string $period The period in YYYY-MM format
-     * @return int|false The report ID if found, false otherwise
-     */
-    public function getReportIdByPeriod($domain, $period) {
-        return $this->reportModel->getReportIdByPeriod($domain, $period);
-    }
-
-    /**
-     * Get all available periods for a client domain
-     * 
-     * @param string $domain The client domain
-     * @param int $limit Optional limit on how many periods to return (default 12)
-     * @return array Array of period data with 'period' and 'report_id' fields
-     */
-    public function getAvailablePeriods($domain, $limit = 12) {
-        return $this->reportModel->getAvailablePeriods($domain, $limit);
-    }
-        
-        
+    
     // Display search positions
     public function positions($id) {
         // Get report data
@@ -79,11 +79,17 @@ class ReportController {
             exit;
         }
         
-        // Get search data for different engines
-        $google_data = $this->getFilteredSearchData($id, 'google');
-        $google_mobile_data = $this->getFilteredSearchData($id, 'google_mobile');
-        $yahoo_data = $this->getFilteredSearchData($id, 'yahoo');
-        $bing_data = $this->getFilteredSearchData($id, 'bing');
+        // Get search data for all engines defined in config
+        $engineData = [];
+        foreach (EngineConfig::getEngineKeys() as $engine) {
+            $engineData[$engine] = $this->getFilteredSearchData($id, $engine);
+        }
+        
+        // For backward compatibility with existing view templates
+        $google_data = $engineData['google'] ?? [];
+        $google_mobile_data = $engineData['google_mobile'] ?? [];
+        $yahoo_data = $engineData['yahoo'] ?? [];
+        $bing_data = $engineData['bing'] ?? [];
         
         // Prepare data for view
         $report = [
@@ -117,8 +123,13 @@ class ReportController {
             return $a['rank'] - $b['rank']; 
         });
         
+        // Filter out "not ranked" keywords (rank = 101)
+        $filtered = array_filter($data, function($row) {
+            return $row['rank'] != EngineConfig::NOT_RANKED;
+        });
+        
         // Get top 5
-        return array_slice($data, 0, 5);
+        return array_slice($filtered, 0, 5);
     }
     
     // Helper method to prepare most improved data
@@ -128,12 +139,40 @@ class ReportController {
             return $b['difference'] - $a['difference']; 
         });
         
-        // Filter to only show improved keywords and get top 5
+        // Filter to only show improved keywords (not including "entered" which is 100)
         $improved = array_filter($data, function($row) {
-            return $row['difference'] > 0;
+            // Include normal improvements (positive values less than ENTERED constant)
+            return $row['difference'] > 0 && $row['difference'] < EngineConfig::ENTERED;
         });
         
         return array_slice($improved, 0, 5);
     }
     
+    // Helper method to get newly entered keywords
+    private function getNewlyEnteredKeywords($data) {
+        // Filter to only show keywords that entered rankings
+        return array_filter($data, function($row) {
+            return $row['difference'] == EngineConfig::ENTERED;
+        });
+    }
+    
+    // Helper method to get dropped keywords
+    private function getDroppedKeywords($data) {
+        // Filter to only show keywords that dropped from rankings
+        return array_filter($data, function($row) {
+            return $row['difference'] == EngineConfig::DROPPED;
+        });
+    }
+    
+    // TODO: Implement the following methods
+
+    private function getReportIdByPeriod($domain, $period) {
+        // Implementation needed
+        return null;
+    }
+    
+    private function getAvailablePeriods($domain) {
+        // Implementation needed
+        return [];
+    }
 }

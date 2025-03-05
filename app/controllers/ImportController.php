@@ -1,6 +1,7 @@
 <?php
 require_once __DIR__ . '/../models/Report.php';
 require_once __DIR__ . '/../models/SearchData.php';
+require_once __DIR__ . '/../config/EngineConfig.php';
 
 class ImportController {
     private $reportModel;
@@ -117,7 +118,9 @@ class ImportController {
                     }
                 }
                 
-                // TODO: Update existing report
+                // Update existing report
+                $this->reportModel->report_id = $report_id;
+                $this->reportModel->update();
             } else {
                 // Create new report
                 if (!$this->reportModel->create()) {
@@ -137,10 +140,20 @@ class ImportController {
             $conn->commit();
             $result['success'] = true;
             
+            // Optional: Delete the temporary file
+            if (file_exists($filepath)) {
+                unlink($filepath);
+            }
+            
         } catch (Exception $e) {
             // Rollback transaction on error
             $conn->rollback();
             $result['error'] = 'Error during import: ' . $e->getMessage();
+            
+            // Clean up file on error
+            if (file_exists($filepath)) {
+                unlink($filepath);
+            }
         }
         
         return $result;
@@ -161,62 +174,38 @@ class ImportController {
             return trim($header);
         }, $headers);
         
-        // Find column indexes
-        $keyword_idx = array_search('Keyword', $headers);
-        $visibility_idx = array_search('Visibility', $headers);
-        $vis_diff_idx = array_search('Visibility Difference', $headers);
-        
-        // Google columns
-        $google_rank_idx = array_search('Google HOU Rank', $headers);
-        $google_prev_idx = array_search('Google HOU Previous Rank', $headers);
-        $google_diff_idx = array_search('Google HOU Difference', $headers);
-        $google_serp_idx = array_search('Google HOU SERP Features', $headers);
-        $google_url_idx = array_search('Google HOU URL Found', $headers);
-        
-        // Google Mobile columns
-        $gmobile_rank_idx = array_search('Google Mobile HOU Rank', $headers);
-        $gmobile_prev_idx = array_search('Google Mobile HOU Previous Rank', $headers);
-        $gmobile_diff_idx = array_search('Google Mobile HOU Difference', $headers);
-        $gmobile_serp_idx = array_search('Google Mobile HOU SERP Features', $headers);
-        $gmobile_url_idx = array_search('Google Mobile HOU URL Found', $headers);
-        
-        // Yahoo columns
-        $yahoo_rank_idx = array_search('Yahoo! Rank', $headers);
-        $yahoo_prev_idx = array_search('Yahoo! Previous Rank', $headers);
-        $yahoo_diff_idx = array_search('Yahoo! Difference', $headers);
-        $yahoo_serp_idx = array_search('Yahoo! SERP Features', $headers);
-        $yahoo_url_idx = array_search('Yahoo! URL Found', $headers);
-        
-        // Bing columns
-        $bing_rank_idx = array_search('Bing US Rank', $headers);
-        $bing_prev_idx = array_search('Bing US Previous Rank', $headers);
-        $bing_diff_idx = array_search('Bing US Difference', $headers);
-        $bing_serp_idx = array_search('Bing US SERP Features', $headers);
-        $bing_url_idx = array_search('Bing US URL Found', $headers);
+        // Find column indexes for all engines
+        $column_indexes = $this->findColumnIndexes($headers);
         
         // Validate required columns
-        if ($keyword_idx === false || $visibility_idx === false || $vis_diff_idx === false) {
+        if (!isset($column_indexes['keyword']) || 
+            !isset($column_indexes['visibility']) || 
+            !isset($column_indexes['visibility_difference'])) {
             fclose($handle);
             return false;
         }
         
-        // Clear existing data
-        $engines = ['google', 'google_mobile', 'yahoo', 'bing'];
-        foreach ($engines as $engine) {
+        // Clear existing data for each engine
+        foreach (EngineConfig::getEngineKeys() as $engine) {
             $this->searchDataModel->clearReportData($report_id, $engine);
         }
         
         // Process data rows
         while (($data = fgetcsv($handle)) !== FALSE) {
+            // Skip short rows
+            if (count($data) < count($headers)) {
+                continue;
+            }
+            
             // Clean and convert data
             $data = array_map(function($value) {
-                return iconv('CP1252', 'UTF-8//IGNORE', $value);
+                return iconv('CP1252', 'UTF-8//IGNORE', trim($value));
             }, $data);
             
             // Extract common data
-            $keyword = $data[$keyword_idx];
-            $visibility = intval($data[$visibility_idx]);
-            $visibility_difference = intval($data[$vis_diff_idx]);
+            $keyword = $data[$column_indexes['keyword']];
+            $visibility = $this->parseNumericValue($data[$column_indexes['visibility']]);
+            $visibility_difference = $this->parseNumericValue($data[$column_indexes['visibility_difference']]);
             
             // Set common properties
             $this->searchDataModel->report_id = $report_id;
@@ -224,52 +213,138 @@ class ImportController {
             $this->searchDataModel->visibility = $visibility;
             $this->searchDataModel->visibility_difference = $visibility_difference;
             
-            // Process Google data
-            if ($google_rank_idx !== false && !empty($data[$google_rank_idx])) {
-                $this->searchDataModel->rank = intval($data[$google_rank_idx]);
-                $this->searchDataModel->previous_rank = intval($data[$google_prev_idx]);
-                $this->searchDataModel->difference = intval($data[$google_diff_idx]);
-                $this->searchDataModel->serp_features = $data[$google_serp_idx];
-                $this->searchDataModel->url = $data[$google_url_idx];
+            // Process each search engine's data
+            foreach (EngineConfig::getAllEngines() as $engine => $columns) {
+                // Skip if we don't have the column indexes for this engine
+                if (!isset($column_indexes[$engine])) {
+                    continue;
+                }
                 
-                $this->searchDataModel->save('google');
-            }
-            
-            // Process Google Mobile data
-            if ($gmobile_rank_idx !== false && !empty($data[$gmobile_rank_idx])) {
-                $this->searchDataModel->rank = intval($data[$gmobile_rank_idx]);
-                $this->searchDataModel->previous_rank = intval($data[$gmobile_prev_idx]);
-                $this->searchDataModel->difference = intval($data[$gmobile_diff_idx]);
-                $this->searchDataModel->serp_features = $data[$gmobile_serp_idx];
-                $this->searchDataModel->url = $data[$gmobile_url_idx];
+                $engineIndexes = $column_indexes[$engine];
                 
-                $this->searchDataModel->save('google_mobile');
-            }
-            
-            // Process Yahoo data
-            if ($yahoo_rank_idx !== false && !empty($data[$yahoo_rank_idx])) {
-                $this->searchDataModel->rank = intval($data[$yahoo_rank_idx]);
-                $this->searchDataModel->previous_rank = intval($data[$yahoo_prev_idx]);
-                $this->searchDataModel->difference = intval($data[$yahoo_diff_idx]);
-                $this->searchDataModel->serp_features = $data[$yahoo_serp_idx];
-                $this->searchDataModel->url = $data[$yahoo_url_idx];
-                
-                $this->searchDataModel->save('yahoo');
-            }
-            
-            // Process Bing data
-            if ($bing_rank_idx !== false && !empty($data[$bing_rank_idx])) {
-                $this->searchDataModel->rank = intval($data[$bing_rank_idx]);
-                $this->searchDataModel->previous_rank = intval($data[$bing_prev_idx]);
-                $this->searchDataModel->difference = intval($data[$bing_diff_idx]);
-                $this->searchDataModel->serp_features = $data[$bing_serp_idx];
-                $this->searchDataModel->url = $data[$bing_url_idx];
-                
-                $this->searchDataModel->save('bing');
+                // Check if rank column exists and has a value
+                if (isset($engineIndexes['rank']) && isset($data[$engineIndexes['rank']])) {
+                    // Set rank based on whether it contains "not in top"
+                    $rankValue = $data[$engineIndexes['rank']];
+                    if (strpos(strtolower($rankValue), 'not') !== false) {
+                        $this->searchDataModel->rank = EngineConfig::NOT_RANKED;
+                    } else {
+                        $this->searchDataModel->rank = $this->parseNumericValue($rankValue);
+                    }
+                    
+                    // Set other values
+                    $this->searchDataModel->previous_rank = $this->parsePreviousRank(
+                        $data[$engineIndexes['prevRank']] ?? ''
+                    );
+                    
+                    $this->searchDataModel->difference = $this->parseDifference(
+                        $data[$engineIndexes['diff']] ?? ''
+                    );
+                    
+                    $this->searchDataModel->serp_features = $data[$engineIndexes['serp']] ?? '';
+                    $this->searchDataModel->url = $data[$engineIndexes['url']] ?? '';
+                    
+                    // Save to database
+                    $this->searchDataModel->save($engine);
+                }
             }
         }
         
         fclose($handle);
         return true;
+    }
+    
+    // Find all column indexes in the CSV headers
+    private function findColumnIndexes($headers) {
+        $indexes = [
+            'keyword' => array_search('Keyword', $headers),
+            'visibility' => array_search('Visibility', $headers),
+            'visibility_difference' => array_search('Visibility Difference', $headers)
+        ];
+        
+        // Find indexes for each engine
+        foreach (EngineConfig::getAllEngines() as $engine => $columns) {
+            $engineIndexes = [
+                'rank' => array_search($columns['rankColumn'], $headers),
+                'prevRank' => array_search($columns['prevRankColumn'], $headers),
+                'diff' => array_search($columns['diffColumn'], $headers),
+                'serp' => array_search($columns['serpColumn'], $headers),
+                'url' => array_search($columns['urlColumn'], $headers)
+            ];
+            
+            // Only include this engine if we found the rank column
+            if ($engineIndexes['rank'] !== false) {
+                $indexes[$engine] = $engineIndexes;
+            }
+        }
+        
+        return $indexes;
+    }
+    
+    /**
+     * Parse numeric value from string - handles empty, non-numeric values, and formats like "1(2)"
+     */
+    private function parseNumericValue($value) {
+        if (empty($value)) {
+            return 0;
+        }
+        
+        // Handle formats like "1(2)" - extract the first number only
+        if (preg_match('/^(\d+)\(\d+\)$/', $value, $matches)) {
+            return (int)$matches[1];
+        }
+        
+        // Extract numbers from string if mixed
+        if (preg_match('/(-?\d+(\.\d+)?)/', $value, $matches)) {
+            return floatval($matches[1]);
+        }
+        
+        return is_numeric($value) ? floatval($value) : 0;
+    }
+    
+    /**
+     * Parse previous rank value - handle 'not in top' cases and formats like "1(2)"
+     */
+    private function parsePreviousRank($value) {
+        if (empty($value)) {
+            return 0;
+        }
+        
+        // Check for "not in top" strings
+        if (strpos(strtolower($value), 'not') !== false) {
+            return EngineConfig::NOT_RANKED;
+        }
+        
+        // Handle formats like "1(2)" - extract the first number only
+        if (preg_match('/^(\d+)\(\d+\)$/', $value, $matches)) {
+            return (int)$matches[1];
+        }
+        
+        return $this->parseNumericValue($value);
+    }
+    
+    /**
+     * Parse difference value - handle special cases like 'dropped', 'entered', etc.
+     */
+    private function parseDifference($value) {
+        if (empty($value)) {
+            return EngineConfig::NO_CHANGE;
+        }
+        
+        $value = strtolower(trim($value));
+        
+        // Handle special text cases
+        switch ($value) {
+            case 'dropped':
+                return EngineConfig::DROPPED;
+            case 'entered':
+                return EngineConfig::ENTERED;
+            case 'stays out':
+                return EngineConfig::NO_CHANGE;
+            case 'new':
+                return EngineConfig::ENTERED;
+            default:
+                return $this->parseNumericValue($value);
+        }
     }
 }

@@ -15,15 +15,6 @@
 </div>
 
 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
-    <div class="flex justify-between items-center mb-6">
-        <h2 class="text-xl font-semibold text-gray-700">
-            <?php echo htmlspecialchars($report['client_domain']); ?> - Search Rankings
-        </h2>
-        <div class="text-sm text-gray-500">
-            Import Date: <?php echo date('F j, Y', strtotime($report['import_date'])); ?>
-        </div>
-    </div>
-
     <!-- Tabs for different search engines -->
     <div class="mb-4 border-b">
         <ul class="flex flex-wrap -mb-px" id="seoTabs" role="tablist">
