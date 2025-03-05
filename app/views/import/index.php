@@ -10,7 +10,7 @@
 </div>
 
 <div class="bg-white rounded-lg border border-slate-200 shadow-sm p-6">
-  <h2 class="text-xl font-semibold text-slate-900 mb-6">Import SEO Data</h2>
+  <h2 class="text-xl font-semibold text-slate-800 mb-6">Import Rank Tracker Data</h2>
   
   <?php if ($success): ?>
     <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 p-4 mb-6">
@@ -32,7 +32,7 @@
     </div>
   <?php endif; ?>
   
-  <form action="import.php" method="post" enctype="multipart/form-data" class="space-y-4">
+  <form action="index.php?action=import" method="post" enctype="multipart/form-data" class="space-y-4">
     <div>
       <label for="client_domain" class="block text-sm font-medium text-slate-700 mb-1">
         Client Domain*
