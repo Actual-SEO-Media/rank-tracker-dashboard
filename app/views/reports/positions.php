@@ -1,5 +1,4 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
-
 <div class="flex items-center mb-6">
     <a href="index.php?action=details&id=<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
@@ -13,7 +12,6 @@
         ?>
     </h1>
 </div>
-
 <div class="bg-white rounded-lg shadow-md p-6 mb-6">
     <!-- Tabs for different search engines -->
     <div class="mb-4 border-b">
@@ -44,7 +42,6 @@
             ?>
         </ul>
     </div>
-    
     <!-- Tab content -->
     <div id="tabContent">
         <?php 
@@ -102,28 +99,76 @@
                                 </tr>
                             </thead>
                             <tbody class="bg-white divide-y divide-gray-200">
-                                <?php foreach ($data as $row): ?>
-                                    <tr class="hover:bg-gray-50">
-                                        <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
-                                        <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
-                                            <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
-                                                <?php echo htmlspecialchars($row['url']); ?>
-                                            </a>
-                                        </td>
-                                        <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>"><?php echo $row['rank']; ?></td>
-                                        <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['previous_rank']; ?></td>
-                                        <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
-                                            <?php if ($row['difference'] > 0): ?>
-                                                <span class="text-green-600">+<?php echo $row['difference']; ?></span>
-                                            <?php elseif ($row['difference'] < 0): ?>
-                                                <span class="text-red-600"><?php echo $row['difference']; ?></span>
-                                            <?php else: ?>
-                                                <span class="text-gray-500">0</span>
-                                            <?php endif; ?>
-                                        </td>
-                                    </tr>
-                                <?php endforeach; ?>
-                            </tbody>
+    <?php foreach ($data as $row): ?>
+        <tr class="hover:bg-gray-50">
+            <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
+            <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
+                <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
+                    <?php echo htmlspecialchars($row['url']); ?>
+                </a>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap" data-rank="<?php echo $row['rank']; ?>">
+                <?php if ($row['rank'] == 101): ?>
+                    <span class="text-gray-400">—</span>
+                <?php else: ?>
+                    <div class="flex items-center space-x-1.5">
+                        <span><?php echo $row['rank']; ?></span>
+                        <?php if ($row['previous_rank'] == 101): ?>
+                            <span class="inline-block h-1.5 w-1.5 rounded-full bg-blue-500" title="New entry"></span>
+                        <?php endif; ?>
+                    </div>
+                <?php endif; ?>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap">
+                <?php if ($row['previous_rank'] == 101): ?>
+                    <span class="text-gray-400">—</span>
+                <?php else: ?>
+                    <?php echo $row['previous_rank']; ?>
+                <?php endif; ?>
+            </td>
+            <td class="px-4 py-2 whitespace-nowrap" data-change="<?php echo $row['difference']; ?>">
+                <?php if ($row['difference'] == 100): ?>
+                    <div class="flex items-center">
+                        <div class="h-6 w-1 bg-blue-500 rounded-sm mr-2"></div>
+                        <span class="text-blue-600 font-medium">New</span>
+                    </div>
+                <?php elseif ($row['difference'] == -100): ?>
+                    <div class="flex items-center">
+                        <div class="h-6 w-1 bg-red-500 rounded-sm mr-2"></div>
+                        <span class="text-red-600 font-medium">Out</span>
+                    </div>
+                <?php elseif ($row['difference'] > 0): ?>
+                    <div class="flex items-center">
+                        <div class="relative h-6 w-4 mr-2">
+                            <div class="absolute inset-x-0 bottom-0 h-full bg-green-100 rounded-sm"></div>
+                            <div class="absolute inset-x-0 bottom-0 bg-green-500 rounded-sm" style="height: <?php echo min(100, $row['difference'] * 10); ?>%;"></div>
+                        </div>
+                        <span class="text-green-600 font-medium">+<?php echo $row['difference']; ?></span>
+                    </div>
+                <?php elseif ($row['difference'] < 0 && $row['difference'] != -100): ?>
+                    <div class="flex items-center">
+                        <div class="relative h-6 w-4 mr-2">
+                            <div class="absolute inset-x-0 bottom-0 h-full bg-red-100 rounded-sm"></div>
+                            <div class="absolute inset-x-0 bottom-0 bg-red-500 rounded-sm" style="height: <?php echo min(100, abs($row['difference']) * 10); ?>%;"></div>
+                        </div>
+                        <span class="text-red-600 font-medium"><?php echo $row['difference']; ?></span>
+                    </div>
+                <?php elseif ($row['rank'] == 101 && $row['previous_rank'] == 101): ?>
+                    <div class="flex items-center">
+                        <div class="h-0.5 w-4 bg-gray-300 rounded-sm mr-2"></div>
+                        <span class="text-gray-400 font-medium">Not ranked</span>
+                    </div>
+                <?php else: ?>
+                    <div class="flex items-center">
+                        <div class="h-0.5 w-4 bg-gray-300 rounded-sm mr-2"></div>
+                        <span class="text-gray-500 font-medium">0</span>
+                    </div>
+                <?php endif; ?>
+            </td>
+        </tr>
+    <?php endforeach; ?>
+</tbody>
+                          
                         </table>
                     </div>
                 <?php endif; ?>

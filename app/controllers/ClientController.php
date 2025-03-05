@@ -11,9 +11,13 @@ class ClientController {
         $this->reportModel = new Report();
     }
     
-    // Display clients dashboard
+    /**
+     * Displays the clients dashboard.
+     * 
+     * Retrieves all clients along with the total number of reports for each client 
+     * and the latest report if available.
+     */
     public function index() {
-        // Get all clients
         $clientsResult = $this->clientModel->getAll();
         $clients = [];
         
@@ -30,13 +34,15 @@ class ClientController {
             ];
         }
         
-        // Include the view
         include __DIR__ . '/../views/clients/index.php';
     }
     
-    // Display client reports
+    /**
+     * Displays reports for a specific client.
+     * 
+     * @param string $domain The domain of the client whose reports are being retrieved.
+     */
     public function reports($domain) {
-        // Get client reports
         $reportsResult = $this->reportModel->getClientReports($domain);
         $reports = [];
         
@@ -44,7 +50,6 @@ class ClientController {
             $reports[] = $row;
         }
         
-        // Include the view
         include __DIR__ . '/../views/reports/index.php';
     }
 }
