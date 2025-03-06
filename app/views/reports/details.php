@@ -58,6 +58,9 @@
     <a href="/" class="inline-flex items-center px-3 py-1.5 text-medium rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors">
       Baseline Report
     </a>
+     <a href="/" class="inline-flex items-center px-3 py-1.5 text-medium rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors">
+      Summary
+    </a>
   </div>
   
   <!-- Right side buttons -->
