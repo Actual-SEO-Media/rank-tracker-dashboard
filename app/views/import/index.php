@@ -87,6 +87,29 @@
     </label>
   </div>
 </div>
+
+<div class="flex items-center mt-4">
+  <input type="checkbox" id="is_baseline" name="is_baseline" 
+         class="h-4 w-4 text-sky-600 focus:ring-sky-500 border-slate-300 rounded">
+  <label for="is_baseline" class="ml-2 block text-sm text-slate-700">
+    Set as baseline report
+  </label>
+  <div class="ml-2">
+    <span class="relative inline-block">
+      <button type="button" 
+              class="text-slate-400 hover:text-slate-500"
+              data-tooltip="baseline-info">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-8-3a1 1 0 00-.867.5 1 1 0 11-1.731-1A3 3 0 0113 8a3.001 3.001 0 01-2 2.83V11a1 1 0 11-2 0v-1a1 1 0 011-1 1 1 0 100-2zm0 8a1 1 0 100-2 1 1 0 000 2z" clip-rule="evenodd" />
+        </svg>
+      </button>
+      <div id="baseline-info" class="hidden absolute z-10 w-60 px-3 py-2 bg-slate-800 text-white text-xs rounded shadow-lg -translate-x-1/2 left-1/2" role="tooltip">
+        A baseline report is used as a reference point to compare with other reports. Only one baseline can exist per client domain.
+        <div class="tooltip-arrow" data-popper-arrow></div>
+      </div>
+    </span>
+  </div>
+</div>
     
     <div class="pt-4">
       <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium shadow-sm flex items-center">

@@ -163,16 +163,40 @@ class ReportController {
             return $row['difference'] == EngineConfig::DROPPED;
         });
     }
+
+    public function toggleBaseline() {
+    // Check if report_id and set_baseline parameters are provided
+    if (!isset($_POST['report_id']) || !isset($_POST['set_baseline'])) {
+        // Invalid request, redirect back to home
+        header('Location: index.php');
+        exit;
+    }
+    
+    $reportId = (int)$_POST['report_id'];
+    $setBaseline = (bool)$_POST['set_baseline'];
+    
+    // Get the report
+    if (!$this->reportModel->getById($reportId)) {
+        // Report not found, redirect to home
+        header('Location: index.php');
+        exit;
+    }
+    
+    // Set or remove baseline status
+    $success = $this->reportModel->setBaseline($setBaseline);
+    
+    // Redirect back to report details
+    header('Location: index.php?action=report&id=' . $reportId);
+    exit;
+}
     
     // TODO: Implement the following methods
 
     private function getReportIdByPeriod($domain, $period) {
-        // Implementation needed
-        return null;
+        return $this->reportModel->getReportIdByPeriod($domain, $period);
     }
-    
     private function getAvailablePeriods($domain) {
-        // Implementation needed
-        return [];
+        return $this->reportModel->getAvailablePeriods($domain);
     }
 }
+
