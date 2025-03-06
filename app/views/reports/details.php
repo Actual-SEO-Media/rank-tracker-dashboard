@@ -41,7 +41,7 @@
     </span>
   </div>
 </div>
-  <!-- Actions Row -->
+<!-- Navigation -->
  <div class="flex justify-between mb-6">
   <!-- Left side buttons -->
   <div class="flex gap-4">
@@ -95,6 +95,7 @@
     </a>
   </div>
 </div>
+
 
   <!-- Bento Grid Layout -->
   <div class="grid grid-cols-1 md:grid-cols-3 gap-6">

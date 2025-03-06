@@ -1,15 +1,15 @@
 <?php
 require_once __DIR__ . '/../models/Report.php';
-require_once __DIR__ . '/../models/SearchData.php';
+require_once __DIR__ . '/../models/RankingData.php';
 require_once __DIR__ . '/../config/EngineConfig.php';
 
 class ReportController {
     private $reportModel;
-    private $searchDataModel;
+    private $rankingDataModel;
     
     public function __construct() {
         $this->reportModel = new Report();
-        $this->searchDataModel = new SearchData();
+        $this->rankingDataModel = new RankingData();
     }
     
     // Display report details
@@ -51,7 +51,7 @@ class ReportController {
         ];
         
         // Calculate report statistics
-        $stats = $this->searchDataModel->calculateReportStats($id);
+        $stats = $this->rankingDataModel->calculateReportStats($id);
         
         // Get baseline report
         $baseline_report = $this->reportModel->getBaselineReport($this->reportModel->client_domain);
@@ -106,7 +106,7 @@ class ReportController {
     
     // Helper method to get filtered search data (only entries with URLs)
     private function getFilteredSearchData($report_id, $engine) {
-        $result = $this->searchDataModel->getFilteredByReportAndEngine($report_id, $engine);
+        $result = $this->rankingDataModel->getFilteredByReportAndEngine($report_id, $engine);
         $data = [];
         
         while ($row = $result->fetch_assoc()) {

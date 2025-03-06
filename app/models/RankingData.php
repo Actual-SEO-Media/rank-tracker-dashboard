@@ -2,7 +2,7 @@
 require_once __DIR__ . '/../config/database.php';
 require_once __DIR__ . '/../config/EngineConfig.php';
 
-class SearchData {
+class RankingData {
     private $conn;
     
     // Properties

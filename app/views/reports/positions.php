@@ -1,5 +1,14 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
 
+<?php
+require_once __DIR__ . '/../../helpers/template_functions.php';
+
+include_navigation([
+    'report' => $report ?? [],
+    'navigation' => $navigation ?? [],
+    'period' => $period ?? date('Y-m')
+]);
+?>
 <div class="flex items-center mb-6">
     <a href="index.php?action=details&id=<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
