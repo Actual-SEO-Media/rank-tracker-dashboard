@@ -1,29 +1,25 @@
 <?php
 
-// Set error reporting for development
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
 
-// Define base path
 define('BASE_PATH', __DIR__);
 
-// Include controllers
 require_once BASE_PATH . '/app/controllers/ClientController.php';
 require_once BASE_PATH . '/app/controllers/ReportController.php';
 require_once BASE_PATH . '/app/controllers/ImportController.php';
 
-// Simple router
+
+
 $action = isset($_GET['action']) ? $_GET['action'] : 'home';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $domain = isset($_GET['domain']) ? $_GET['domain'] : null;
 
-// Initialize controllers
 $clientController = new ClientController();
 $reportController = new ReportController();
 $importController = new ImportController();
 
-// Route to the appropriate controller and action
 switch ($action) {
     case 'home':
         // Default homepage - show client list

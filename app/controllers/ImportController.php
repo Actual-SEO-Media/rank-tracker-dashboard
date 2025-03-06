@@ -1,6 +1,5 @@
 <?php
 require_once __DIR__ . '/../services/ImportService.php';
-
 class ImportController {
     private $importService;
     
@@ -15,8 +14,9 @@ class ImportController {
     public function index() {
         $domain = isset($_GET['domain']) ? $_GET['domain'] : '';
         $success = false;
+        $success_message = '';
         $error = '';
-        
+
         // Handle form submission
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $this->handleFormSubmission();
@@ -24,6 +24,7 @@ class ImportController {
             $error = $result['error'];
             $domain = $result['domain'] ?? $domain;
             $report_id = $result['report_id'] ?? null;
+          
         }
         
         // Include the view
@@ -40,7 +41,7 @@ class ImportController {
         if (empty($_POST['client_domain'])) {
             return [
                 'success' => false,
-                'error' => 'Client domain is required',
+                'error' => 'Client domain is required. Please enter a domain name.',
                 'domain' => $_POST['client_domain'] ?? ''
             ];
         }
@@ -48,7 +49,7 @@ class ImportController {
         if (empty($_POST['report_period'])) {
             return [
                 'success' => false,
-                'error' => 'Report period is required',
+                'error' => 'Report period is required. Please select a date range.',
                 'domain' => $_POST['client_domain']
             ];
         }
@@ -56,10 +57,11 @@ class ImportController {
         if (!isset($_FILES['csv_file']) || $_FILES['csv_file']['error'] != 0) {
             return [
                 'success' => false,
-                'error' => 'Please select a valid CSV file',
+                'error' => 'Invalid file. Please upload a valid CSV file.',
                 'domain' => $_POST['client_domain']
             ];
         }
+        
         
         // Get form data
         $clientDomain = trim($_POST['client_domain']);

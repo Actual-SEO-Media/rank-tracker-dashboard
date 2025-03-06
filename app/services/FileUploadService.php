@@ -15,7 +15,8 @@ class FileUploadService {
             'success' => false,
             'error' => '',
             'filepath' => '',
-            'original_filename' => ''
+            'original_filename' => '',
+            'success_message' => ''
         ];
         
         // Check if file was uploaded properly
@@ -49,7 +50,7 @@ class FileUploadService {
         $result['success'] = true;
         $result['filepath'] = $filepath;
         $result['original_filename'] = $file['name'];
-        
+        $result['success_message'] = 'Succesfully uploaded file.';
         return $result;
     }
     

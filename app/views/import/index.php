@@ -15,14 +15,6 @@
   <?php if ($success): ?>
     <div class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-800 p-4 mb-6">
       <p><?php echo $success_message; ?></p>
-      <p class="mt-2">
-        <a href="client.php?domain=<?php echo urlencode($client_domain); ?>" class="text-emerald-700 font-medium hover:underline inline-flex items-center">
-          View reports for <?php echo htmlspecialchars($client_domain); ?>
-          <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 ml-1" viewBox="0 0 20 20" fill="currentColor">
-            <path fill-rule="evenodd" d="M10.293 5.293a1 1 0 011.414 0l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414-1.414L12.586 11H5a1 1 0 110-2h7.586l-2.293-2.293a1 1 0 010-1.414z" clip-rule="evenodd" />
-          </svg>
-        </a>
-      </p>
     </div>
   <?php endif; ?>
   
@@ -43,7 +35,7 @@
                     placeholder-slate-400
                     focus:outline-none focus:border-sky-500 focus:ring-1 focus:ring-sky-500"
              required>
-      <p class="text-sm text-slate-500 mt-1">Example: astrocityscrap.com</p>
+      <p class="text-sm text-slate-500 mt-1">Example: actualseomedia.com</p>
     </div>
     
     <div>
@@ -58,28 +50,43 @@
              required>
       <p class="text-sm text-slate-500 mt-1">The month this report covers</p>
     </div>
-    
     <div>
-      <label for="csv_file" class="block text-sm font-medium text-slate-700 mb-1">
-        CSV File*
-      </label>
-      <div class="flex items-center justify-center w-full">
-        <label for="csv_file" class="flex flex-col items-center justify-center w-full px-3 py-6 border-2 border-slate-300 border-dashed rounded-md cursor-pointer bg-slate-50 hover:bg-slate-100 transition">
-          <div class="flex flex-col items-center justify-center">
-            <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
-            </svg>
-            <p class="mt-2 text-sm text-slate-500">
-              <span class="font-medium">Click to upload</span> or drag and drop
-            </p>
-            <p class="text-xs text-slate-500">
-              CSV files only
-            </p>
-          </div>
-          <input id="csv_file" name="csv_file" type="file" accept=".csv" class="hidden" required />
-        </label>
+  <label for="csv_file" class="block text-sm font-medium text-slate-700 mb-1">
+    CSV File*
+  </label>
+  <div class="flex items-center justify-center w-full">
+    <label for="csv_file" class="flex flex-col items-center justify-center w-full px-3 py-6 border-2 border-slate-300 border-dashed rounded-md cursor-pointer bg-slate-50 hover:bg-slate-100 transition" id="upload-box">
+      <!-- Default state (shown when no file selected) -->
+      <div id="default-content" class="flex flex-col items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-slate-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12" />
+        </svg>
+        <p class="mt-2 text-sm text-slate-500">
+          <span class="font-medium">Click to upload</span> or drag and drop
+        </p>
+        <p class="text-xs text-slate-500">
+          CSV files only
+        </p>
       </div>
-    </div>
+      
+      <!-- Success state (hidden by default, shown when file selected) -->
+      <div id="success-content" class="hidden flex flex-col items-center justify-center">
+        <svg xmlns="http://www.w3.org/2000/svg" class="w-8 h-8 text-green-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <p class="mt-2 text-sm text-green-600 font-medium">
+          File selected successfully!
+        </p>
+        <p id="selected-filename" class="text-xs text-green-500 text-center max-w-xs overflow-hidden text-ellipsis"></p>
+        <p class="mt-2 text-xs text-slate-500">
+          Click to change file
+        </p>
+      </div>
+      
+      <input id="csv_file" name="csv_file" type="file" accept=".csv" class="hidden" required />
+    </label>
+  </div>
+</div>
     
     <div class="pt-4">
       <button type="submit" class="px-4 py-2 bg-slate-900 hover:bg-slate-800 text-white rounded-md text-sm font-medium shadow-sm flex items-center">
@@ -91,5 +98,40 @@
     </div>
   </form>
 </div>
-
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+  const fileInput = document.getElementById('csv_file');
+  const uploadBox = document.getElementById('upload-box');
+  const defaultContent = document.getElementById('default-content');
+  const successContent = document.getElementById('success-content');
+  const selectedFilename = document.getElementById('selected-filename');
+  
+  if (fileInput && uploadBox && defaultContent && successContent && selectedFilename) {
+    fileInput.addEventListener('change', function() {
+      if (fileInput.files.length > 0) {
+        // File was selected - show success state
+        uploadBox.classList.remove('border-slate-300', 'bg-slate-50');
+        uploadBox.classList.add('border-green-300', 'bg-green-50');
+        
+        // Hide default content, show success content
+        defaultContent.classList.add('hidden');
+        successContent.classList.remove('hidden');
+        
+        // Display filename
+        selectedFilename.textContent = fileInput.files[0].name;
+      } else {
+        // No file selected - show default state
+        uploadBox.classList.remove('border-green-300', 'bg-green-50');
+        uploadBox.classList.add('border-slate-300', 'bg-slate-50');
+        
+        // Show default content, hide success content
+        defaultContent.classList.remove('hidden');
+        successContent.classList.add('hidden');
+      }
+    });
+  } else {
+    console.error('Some elements were not found. Check your HTML structure.');
+  }
+});
+</script>
 <?php include __DIR__ . '/../layout/footer.php'; ?>

@@ -1,5 +1,6 @@
 <?php
 
+// TODO: Make better navigation
 function include_navigation($params = []) {
     $defaults = [
         'report' => ['report_id' => 0, 'client_domain' => ''],
@@ -13,4 +14,3 @@ function include_navigation($params = []) {
     
     include __DIR__ . '/../views/layout/navigation.php';
 }
-?>
