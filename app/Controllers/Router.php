@@ -1,6 +1,8 @@
 <?php
 namespace App\Controllers;
 
+require_once __DIR__ . '/../Configs/Constants.php';
+
 class Router {
     private $routes = [
         'GET' => [],
@@ -8,16 +10,17 @@ class Router {
     ];
 
     public function get($route, $callback) {
-        $this->routes['GET'][$route] = $callback;
+        $this->routes['GET'][BASE_URL . $route] = $callback;
     }
 
     public function post($route, $callback) {
-        $this->routes['POST'][$route] = $callback;
+        $this->routes['POST'][BASE_URL . $route] = $callback;
     }
 
     public function dispatch($method, $uri) {
-        $uri = trim(parse_url($uri, PHP_URL_PATH), '/');
-
+        $uri = parse_url($uri, PHP_URL_PATH);
+        $uri = rtrim($uri, '/'); // Remove trailing slashes
+        
         foreach ($this->routes[$method] as $route => $callback) {
             $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
             if (preg_match("#^$routePattern$#", $uri, $matches)) {

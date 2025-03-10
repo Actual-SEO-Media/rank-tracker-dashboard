@@ -1,7 +1,7 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
 
 <div class="flex items-center mb-6">
-    <a href="index.php" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
+    <a href="<?php echo SITE_URL; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
@@ -74,7 +74,7 @@
                 <?php echo count($reports); ?> Reports
             </span>
             <?php if (!empty($reports)): ?>
-                <a href="index.php?action=details&id=<?php echo $reports[0]['report_id']; ?>" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">
+                <a href="<?php echo SITE_URL; ?>/details/<?php echo $reports[0]['report_id']; ?>" class="bg-blue-500 hover:bg-blue-600 text-white text-sm px-3 py-1 rounded-md">
                     View Latest
                 </a>
             <?php endif; ?>
@@ -94,7 +94,7 @@
                         No reports found for this client. Import data to get started.
                     </p>
                     <div class="mt-2">
-                        <a href="index.php?action=import&domain=<?php echo urlencode($domain); ?>" class="text-sm font-medium text-yellow-700 hover:text-yellow-600">
+                        <a href="<?php echo SITE_URL; ?>/import/<?php echo urlencode($domain); ?>" class="text-sm font-medium text-yellow-700 hover:text-yellow-600">
                             Import your first report &rarr;
                         </a>
                     </div>
@@ -157,7 +157,7 @@
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <a href="index.php?action=details&id=<?php echo $report['report_id']; ?>" 
+                                <a href="<?php echo SITE_URL; ?>/details/<?php echo $reports[0]['report_id']; ?>" 
                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md text-sm font-medium">
                                     View Details
                                 </a>

@@ -18,20 +18,38 @@ $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $domain = isset($_GET['domain']) ? $_GET['domain'] : null;
 
 $router = new Router();
-$reportController = new ReportController();
-$importController = new ImportController();
 
-$root_directory = 'rank-tracker-dashboard';
-
-// Define GET routes
-$router->get("{$root_directory}", function () {
+// Default homepage - show client list
+$router->get("", function () {
     $clientController = new ClientController();
 
     $clientController->index();
 });
 
-$router->get("{$root_directory}/reports/{domain}", function ($domain) {
-    echo "Tracking Rank for ID: " . htmlspecialchars($id);
+// Show reports for a specific client
+$router->get("/reports/{domain}", function ($domain) {
+    $clientController = new ClientController();
+
+    $clientController->reports(htmlspecialchars($domain));
+});
+
+// Show import form or process import
+$router->get("/import", function () {
+    $importController = new ImportController();
+
+    $importController->index('');
+});
+
+$router->get("/import/{domain}", function ($domain) {
+    $importController = new ImportController();
+
+    $importController->index(htmlspecialchars($domain));
+});
+
+$router->get("/details/{report_id}", function ($report_id) {
+    $reportController = new ReportController();
+
+    $reportController->details(htmlspecialchars($report_id));
 });
 
 // Dispatch the request

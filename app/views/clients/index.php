@@ -1,4 +1,6 @@
-<?php include __DIR__ . '/../layout/header.php'; ?>
+<?php
+    include __DIR__ . '/../layout/header.php';
+?>
 
 <div class="container mx-auto px-4 py-6">
 
@@ -6,7 +8,7 @@
   <div class="bg-white rounded-lg shadow-sm border border-gray-100 p-6 mb-6">
       <h2 class="text-xl font-semibold text-gray-700 mb-4">Quick Actions</h2>
       <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-          <a href="index.php?action=import" class="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors flex items-center group">
+          <a href="<?php echo SITE_URL; ?>/import" class="border border-gray-200 rounded-lg p-4 hover:bg-blue-50 transition-colors flex items-center group">
               <div class="bg-blue-100 p-3 rounded-full mr-4 group-hover:bg-blue-200 transition-colors">
                   <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 text-blue-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M9 19l3 3m0 0l3-3m-3 3V10" />
@@ -123,14 +125,14 @@
                             <?php endif; ?>
                         </td>
                         <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <a href="index.php?action=reports&domain=<?php echo urlencode($client['domain']); ?>" 
+                            <a href="<?php echo SITE_URL; ?>/reports/<?php echo urlencode($client['domain']); ?>" 
                                class="text-gray-500 hover:text-gray-700 mr-3 transition-colors"
                                title="View Reports">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
                                     <path fill-rule="evenodd" d="M4 4a2 2 0 012-2h4.586A2 2 0 0112 2.586L15.414 6A2 2 0 0116 7.414V16a2 2 0 01-2 2H6a2 2 0 01-2-2V4zm2 6a1 1 0 011-1h6a1 1 0 110 2H7a1 1 0 01-1-1zm1 3a1 1 0 100 2h6a1 1 0 100-2H7z" clip-rule="evenodd" />
                                 </svg>
                             </a>
-                            <a href="index.php?action=import&domain=<?php echo urlencode($client['domain']); ?>" 
+                            <a href="<?php echo SITE_URL; ?>/import/<?php echo urlencode($client['domain']); ?>" 
                                class="text-gray-500 hover:text-gray-700 transition-colors"
                                title="Import New">
                                 <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 inline" viewBox="0 0 20 20" fill="currentColor">
