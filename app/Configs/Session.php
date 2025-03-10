@@ -6,26 +6,13 @@ class Session {
     private $started = false;
 
     private function __construct() {
-        // Set secure session parameters
-        ini_set('session.cookie_httponly', 1);
-        ini_set('session.use_only_cookies', 1);
-        ini_set('session.cookie_secure', 1);
-        ini_set('session.cookie_samesite', 'Strict');
-        
-        // Set session name
-        session_name('RANK_TRACKER_SESSION');
-        
-        // Start session if not already started
         if (session_status() === PHP_SESSION_NONE) {
-            session_start();
-            $this->started = true;
+            // Set secure session parameters
+            ini_set('session.cookie_httponly', 1);
+            ini_set('session.cookie_secure', 1); // Only send cookie over HTTPS
+            ini_set('session.cookie_samesite', 'Strict');
             
-            // Regenerate session ID periodically to prevent session fixation
-            if (!isset($_SESSION['last_regeneration'])) {
-                $this->regenerateSession();
-            } else if (time() - $_SESSION['last_regeneration'] > 1800) { // 30 minutes
-                $this->regenerateSession();
-            }
+            session_start();
         }
     }
 
@@ -50,26 +37,15 @@ class Session {
         }
     }
 
-    public function clear() {
-        session_unset();
-        session_destroy();
-        $this->started = false;
-    }
-
     public function isLoggedIn() {
         return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
     }
 
     public function requireLogin() {
         if (!$this->isLoggedIn()) {
-            header('Location: /login.php');
+            header('Location: index.php?action=login');
             exit;
         }
-    }
-
-    private function regenerateSession() {
-        session_regenerate_id(true);
-        $_SESSION['last_regeneration'] = time();
     }
 
     public function setFlashMessage($key, $message) {
@@ -83,5 +59,58 @@ class Session {
             return $message;
         }
         return null;
+    }
+
+    public function validateSessionData() {
+        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+    }
+
+    public function requireValidSession() {
+        if (!$this->validateSessionData()) {
+            $this->destroy();
+            header('Location: index.php?action=login');
+            exit;
+        }
+    }
+
+    public function logout() {
+        $this->destroy();
+        header('Location: index.php?action=login');
+        exit;
+    }
+
+    private function destroy() {
+        $_SESSION = array();
+        if (isset($_COOKIE[session_name()])) {
+            setcookie(session_name(), '', time() - 3600, '/');
+        }
+        session_destroy();
+    }
+
+    /**
+     * Generate and store CSRF token
+     * @return string The CSRF token
+     */
+    public function generateCsrfToken() {
+        $token = bin2hex(random_bytes(32));
+        $_SESSION['csrf_token'] = $token;
+        return $token;
+    }
+
+    /**
+     * Validate CSRF token
+     * @param string $token The token to validate
+     * @return bool Whether the token is valid
+     */
+    public function validateCsrfToken($token) {
+        return isset($_SESSION['csrf_token']) && hash_equals($_SESSION['csrf_token'], $token);
+    }
+
+    /**
+     * Get current CSRF token
+     * @return string The current CSRF token
+     */
+    public function getCsrfToken() {
+        return $_SESSION['csrf_token'] ?? '';
     }
 } 

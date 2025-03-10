@@ -28,7 +28,7 @@ class Report {
         
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$domain]);
-        return $stmt;
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
     
     // Get single report by ID

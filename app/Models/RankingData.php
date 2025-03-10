@@ -215,6 +215,14 @@ class RankingData {
 
     // Add these new private methods for validation and sanitization
     private function validateData() {
+        // Validate required fields
+        if (empty($this->report_id)) {
+            throw new \Exception("Report ID is required");
+        }
+        if (empty($this->keyword)) {
+            throw new \Exception("Keyword is required");
+        }
+
         // Validate numeric fields
         if (!is_numeric($this->rank) || $this->rank < 0) {
             throw new \Exception("Invalid rank value");
@@ -230,19 +238,6 @@ class RankingData {
         }
         if (!is_numeric($this->difference)) {
             throw new \Exception("Invalid difference value");
-        }
-
-        // Validate required fields
-        if (empty($this->report_id)) {
-            throw new \Exception("Report ID is required");
-        }
-        if (empty($this->keyword)) {
-            throw new \Exception("Keyword is required");
-        }
-
-        // Validate keyword format
-        if (!preg_match('/^[a-zA-Z0-9\s\-_]+$/', $this->keyword)) {
-            throw new \Exception("Invalid keyword format");
         }
     }
 

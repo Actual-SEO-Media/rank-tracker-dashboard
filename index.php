@@ -11,14 +11,31 @@ require __DIR__ . '/vendor/autoload.php';
 use App\Controllers\ClientController;
 use App\Controllers\ReportController;
 use App\Controllers\ImportController;
+use App\Controllers\UserController;
+use App\Configs\Session;
+
+// Initialize session
+$session = Session::getInstance();
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'home';
-$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
-$domain = isset($_GET['domain']) ? $_GET['domain'] : null;
 
+// Initialize controllers
+$userController = new UserController();
 $clientController = new ClientController();
 $reportController = new ReportController();
 $importController = new ImportController();
+
+// Handle login and logout routes
+if ($action === 'login' || $action === 'logout') {
+    $userController->$action();
+    exit;
+}
+
+// Validate session for all other routes
+$session->requireValidSession();
+
+$id = isset($_GET['id']) ? (int)$_GET['id'] : null;
+$domain = isset($_GET['domain']) ? $_GET['domain'] : null;
 
 switch ($action) {
     case 'home':
@@ -78,6 +95,6 @@ switch ($action) {
     default:
         // Handle unknown actions
         header('HTTP/1.0 404 Not Found');
-        echo '404 - Page not found';
+        include __DIR__ . '/app/views/errors/404.php';
         break;
 }

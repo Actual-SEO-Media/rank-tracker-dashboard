@@ -4,7 +4,7 @@ require_once 'vendor/autoload.php';
 use App\Configs\Session;
 
 $session = Session::getInstance();
-$session->clear();
+$session->logout();
 
-header('Location: /login.php');
+header('Location: index.php?action=login');
 exit; 

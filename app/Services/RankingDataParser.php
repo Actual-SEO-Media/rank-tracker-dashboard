@@ -59,6 +59,11 @@ class RankingDataParser {
             $visibility = $this->parseNumericValue($data[$columnIndexes['visibility']]);
             $visibility_difference = $this->parseNumericValue($data[$columnIndexes['visibility_difference']]);
             
+            // Skip rows with empty keywords
+            if (empty($keyword)) {
+                continue;
+            }
+            
             $rowData = [
                 'keyword' => $keyword,
                 'visibility' => $visibility,

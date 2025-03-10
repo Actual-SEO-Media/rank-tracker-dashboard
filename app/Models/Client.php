@@ -17,8 +17,9 @@ class Client {
     // Get all clients
     public function getAll() {
         $query = "SELECT DISTINCT client_domain FROM reports ORDER BY client_domain";
-        $stmt = $this->conn->query($query);
-        return $stmt;
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
     
     // Get client report count
