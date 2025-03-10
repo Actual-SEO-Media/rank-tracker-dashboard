@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . '/../config/EngineConfig.php';
+namespace App\Services;
+
+use App\Configs\EngineConfig;
 
 class RankingDataParser {
     /**

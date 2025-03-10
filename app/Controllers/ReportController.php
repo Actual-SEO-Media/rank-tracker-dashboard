@@ -1,7 +1,9 @@
 <?php
-require_once __DIR__ . '/../models/Report.php';
-require_once __DIR__ . '/../models/RankingData.php';
-require_once __DIR__ . '/../config/EngineConfig.php';
+namespace App\Controllers;
+
+use App\Models\Report;
+use App\Models\RankingData;
+use App\Configs\EngineConfig;
 
 class ReportController {
     private $reportModel;

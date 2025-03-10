@@ -1,5 +1,8 @@
 <?php
-require_once __DIR__ . '/../services/ImportService.php';
+namespace App\Controllers;
+
+use App\Services\ImportService;
+
 class ImportController {
     private $importService;
     

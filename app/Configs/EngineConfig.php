@@ -1,4 +1,5 @@
 <?php
+namespace App\Configs;
 /**
  * Configuration file for search engine definitions
  * Contains column mappings for different search engines in the CSV import

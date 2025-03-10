@@ -1,9 +1,11 @@
 <?php
-require_once __DIR__ . '/../models/Report.php';
-require_once __DIR__ . '/../models/RankingData.php';
-require_once __DIR__ . '/RankingDataParser.php';
-require_once __DIR__ . '/FileUploadService.php';
-require_once __DIR__ . '/../config/database.php';
+namespace App\Services;
+
+use App\Models\Report;
+use App\Models\RankingData;
+use App\Services\RankingDataParser;
+use App\Services\FileUploadService;
+use App\Configs\Database;
 
 class ImportService {
     private $reportModel;
