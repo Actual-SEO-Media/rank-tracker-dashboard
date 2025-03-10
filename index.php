@@ -47,6 +47,17 @@ switch ($action) {
             exit;
         }
         break;
+
+    case 'keywords':
+        // Show keywordpres for a report
+        if ($id) {
+            $reportController->keywords($id);
+        } else {
+            // Redirect to homepage if no ID specified
+            header('Location: index.php');
+            exit;
+        }
+        break;
         
     case 'positions':
         // Show search positions for a report
