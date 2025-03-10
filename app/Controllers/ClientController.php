@@ -23,11 +23,11 @@ class ClientController {
         $clientsResult = $this->clientModel->getAll();
         $clients = [];
         
-        while ($row = $clientsResult->fetch_assoc()) {
+        while ($row = $clientsResult->fetch(\PDO::FETCH_ASSOC)) {
             $domain = $row['client_domain'];
             $reports = $this->reportModel->getClientReports($domain);
-            $totalReports = $reports->num_rows;
-            $latestReport = $totalReports > 0 ? $reports->fetch_assoc() : null;
+            $totalReports = $reports->rowCount();
+            $latestReport = $totalReports > 0 ? $reports->fetch(\PDO::FETCH_ASSOC) : null;
             
             $clients[] = [
                 'domain' => $domain,
@@ -48,10 +48,10 @@ class ClientController {
         $reportsResult = $this->reportModel->getClientReports($domain);
         $reports = [];
         
-        while ($row = $reportsResult->fetch_assoc()) {
+        while ($row = $reportsResult->fetch(\PDO::FETCH_ASSOC)) {
             $reports[] = $row;
         }
         
         include __DIR__ . '/../views/reports/index.php';
     }
-}
+} 

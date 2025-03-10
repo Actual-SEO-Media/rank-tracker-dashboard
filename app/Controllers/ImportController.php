@@ -27,7 +27,6 @@ class ImportController {
             $error = $result['error'];
             $domain = $result['domain'] ?? $domain;
             $report_id = $result['report_id'] ?? null;
-          
         }
         
         // Include the view
@@ -65,18 +64,17 @@ class ImportController {
             ];
         }
         
-        
         // Get form data
         $clientDomain = trim($_POST['client_domain']);
         $reportPeriod = trim($_POST['report_period']);
         $isBaseline = isset($_POST['is_baseline']) ? true : false;
         
         // Call service to handle import
-        return $this->importService->importRankingData(
+        return $this->importService->processImport(
             $_FILES['csv_file'],
             $clientDomain,
             $reportPeriod,
             $isBaseline
         );
     }
-}
+} 

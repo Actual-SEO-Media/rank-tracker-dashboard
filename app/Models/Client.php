@@ -17,9 +17,8 @@ class Client {
     // Get all clients
     public function getAll() {
         $query = "SELECT DISTINCT client_domain FROM reports ORDER BY client_domain";
-        $result = $this->conn->query($query);
-        
-        return $result;
+        $stmt = $this->conn->query($query);
+        return $stmt;
     }
     
     // Get client report count
@@ -27,15 +26,10 @@ class Client {
         $query = "SELECT COUNT(*) as count FROM reports WHERE client_domain = ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $domain);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$domain]);
+        $row = $stmt->fetch();
         
-        if ($row = $result->fetch_assoc()) {
-            return $row['count'];
-        }
-        
-        return 0;
+        return $row ? $row['count'] : 0;
     }
     
     // Get latest report for client
@@ -46,18 +40,11 @@ class Client {
                  LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $domain);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            return $result->fetch_assoc();
-        }
-        
-        return null;
+        $stmt->execute([$domain]);
+        return $stmt->fetch();
     }
 
-        // Delete all reports for a client domain
+    // Delete all reports for a client domain
     public function deleteClient($domain) {
         if (!$domain) {
             return false;
@@ -65,12 +52,6 @@ class Client {
         
         $query = "DELETE FROM " . $this->table . " WHERE client_domain = ?";
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $domain);
-        
-        if ($stmt->execute()) {
-            return $stmt->affected_rows > 0;
-        }
-        return false;
+        return $stmt->execute([$domain]);
     }
-
 }

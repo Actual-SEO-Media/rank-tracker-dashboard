@@ -1,6 +1,7 @@
-/vendor/
-/uploads
 .env
+*.log
 .DS_Store
+vendor/
+node_modules/
 composer.phar
 composer.lock
