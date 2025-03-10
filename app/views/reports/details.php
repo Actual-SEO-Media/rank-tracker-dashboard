@@ -52,7 +52,7 @@
       </svg>
       View Search Engine Positions
     </a>
-    <a href="/" class="inline-flex items-center px-3 py-1.5 text-medium rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors">
+    <a href="index.php?action=keywords&id=<?php echo $report['report_id']; ?>" class="inline-flex items-center px-3 py-1.5 text-medium rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors">
       Keywords
     </a>
     <a href="/" class="inline-flex items-center px-3 py-1.5 text-medium rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors">

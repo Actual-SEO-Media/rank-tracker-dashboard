@@ -171,4 +171,33 @@ class RankingData {
     }
     return $engine . '_data';
 }
+
+    public function getKeywords($report_id){
+        $query = "
+            SELECT DISTINCT atbl.keyword
+            FROM (
+                SELECT keyword FROM google_data WHERE report_id = {$report_id}
+                UNION
+                SELECT keyword FROM google_mobile_data WHERE report_id = {$report_id}
+                UNION
+                SELECT keyword FROM yahoo_data WHERE report_id = {$report_id}
+                UNION
+                SELECT keyword FROM bing_data WHERE report_id = {$report_id}
+            ) AS atbl
+            ORDER BY atbl.keyword ASC;
+        ";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute();
+        
+        $result = $stmt->get_result();
+
+        $data = [];
+        
+        while ($row = $result->fetch_assoc()) {
+            $data[] = $row['keyword'];
+        }
+
+        return $data;
+    }
 }
