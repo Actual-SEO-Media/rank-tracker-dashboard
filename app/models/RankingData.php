@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
-require_once __DIR__ . '/../config/EngineConfig.php';
+namespace App\Models;
+
+use App\Configs\Database;
+use App\Configs\EngineConfig;
 
 class RankingData {
     private $conn;

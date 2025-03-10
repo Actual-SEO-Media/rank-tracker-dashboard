@@ -1,5 +1,7 @@
 <?php
-require_once __DIR__ . '/../config/database.php';
+namespace App\Models;
+
+use App\Configs\Database;
 
 class Report {
     private $conn;

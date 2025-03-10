@@ -1,4 +1,6 @@
 <?php
+namespace App\Configs;
+
 class Database {
     private $host = 'localhost';
     private $user = 'root'; // Change to your MySQL username
@@ -10,7 +12,7 @@ class Database {
         $this->conn = null;
         
         try {
-            $this->conn = new mysqli($this->host, $this->user, $this->pass, $this->name);
+            $this->conn = new \mysqli($this->host, $this->user, $this->pass, $this->name);
             $this->conn->set_charset("utf8mb4");
             
             if ($this->conn->connect_error) {

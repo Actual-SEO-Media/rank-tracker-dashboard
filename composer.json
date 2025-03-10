@@ -1,0 +1,8 @@
+{
+    "name": "admin/rank-tracker-dashboard",
+    "autoload": {
+        "psr-4": {
+            "App\\": "app/"
+        }
+    }
+}

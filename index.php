@@ -6,11 +6,11 @@ error_reporting(E_ALL);
 
 define('BASE_PATH', __DIR__);
 
-require_once BASE_PATH . '/app/controllers/ClientController.php';
-require_once BASE_PATH . '/app/controllers/ReportController.php';
-require_once BASE_PATH . '/app/controllers/ImportController.php';
+require __DIR__ . '/vendor/autoload.php';
 
-
+use App\Controllers\ClientController;
+use App\Controllers\ReportController;
+use App\Controllers\ImportController;
 
 $action = isset($_GET['action']) ? $_GET['action'] : 'home';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;

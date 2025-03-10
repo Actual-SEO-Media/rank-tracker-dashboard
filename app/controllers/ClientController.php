@@ -1,6 +1,8 @@
 <?php
-require_once __DIR__ . '/../models/Client.php';
-require_once __DIR__ . '/../models/Report.php';
+namespace App\Controllers;
+
+use App\Models\Client;
+use App\Models\Report;
 
 class ClientController {
     private $clientModel;
