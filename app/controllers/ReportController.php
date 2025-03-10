@@ -69,6 +69,26 @@ class ReportController {
         // Include the view
         include __DIR__ . '/../views/reports/details.php';
     }
+
+    // Display report keywords
+    public function keywords($id) {
+        // Get report data
+        if (!$this->reportModel->getById($id)) {
+            // Report not found, redirect to home
+            header('Location: index.php');
+            exit;
+        }
+        
+        // Prepare data for view
+        $report = [
+            'report_id' => $this->reportModel->report_id,
+            'report_period' => $this->reportModel->report_period,
+            'report_keywords' => $this->rankingDataModel->getKeywords($id)
+        ];
+        
+        // Include the view
+        include __DIR__ . '/../views/reports/keywords.php';
+    }
     
     // Display search positions
     public function positions($id) {
