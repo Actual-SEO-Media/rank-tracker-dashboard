@@ -62,6 +62,8 @@ class ImportService {
                 $uploadResult['original_filename'], 
                 $isBaseline
             );
+
+            return;
             
             $result['report_id'] = $reportId;
             
@@ -107,13 +109,14 @@ class ImportService {
      * @return int Report ID
      */
     private function handleReportEntry($conn, $clientDomain, $reportPeriod, $filename, $isBaseline) {
-        // Clear any existing baseline if this is marked as baseline
+        return;
+        // Clear any existing baseline if this is marked as baseline        
         if ($isBaseline) {
             $stmt = $conn->prepare("UPDATE reports SET is_baseline = 0 WHERE client_domain = ?");
             $stmt->bind_param("s", $clientDomain);
             $stmt->execute();
         }
-        
+
         // Setup report model data
         $this->reportModel->client_domain = $clientDomain;
         $this->reportModel->report_period = $reportPeriod;
@@ -139,7 +142,7 @@ class ImportService {
         } else {
             // Create new report
             if (!$this->reportModel->create()) {
-                throw new Exception("Failed to create report record");
+                throw new \Exception("Failed to create report record");
             }
             $reportId = $this->reportModel->report_id;
         }

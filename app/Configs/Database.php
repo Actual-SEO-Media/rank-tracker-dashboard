@@ -16,7 +16,7 @@ class Database {
             $this->conn->set_charset("utf8mb4");
             
             if ($this->conn->connect_error) {
-                throw new Exception("Connection failed: " . $this->conn->connect_error);
+                throw new \Exception("Connection failed: " . $this->conn->connect_error);
             }
         } catch(Exception $e) {
             echo "Database connection error: " . $e->getMessage();
