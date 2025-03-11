@@ -34,6 +34,12 @@ $router->get("/reports/{domain}", function ($domain) {
 });
 
 // Show import form or process import
+$router->post("/import", function () {
+    $importController = new ImportController();
+
+    $importController->index('');
+});
+
 $router->get("/import", function () {
     $importController = new ImportController();
 
@@ -50,6 +56,18 @@ $router->get("/details/{report_id}", function ($report_id) {
     $reportController = new ReportController();
 
     $reportController->details(htmlspecialchars($report_id));
+});
+
+$router->get("/positions/{report_id}", function ($report_id) {
+    $reportController = new ReportController();
+
+    $reportController->positions(htmlspecialchars($report_id));
+});
+
+$router->get("/keywords/{report_id}", function ($report_id) {
+    $reportController = new ReportController();
+
+    $reportController->keywords(htmlspecialchars($report_id));
 });
 
 // Dispatch the request

@@ -21,6 +21,11 @@ class Router {
         $uri = parse_url($uri, PHP_URL_PATH);
         $uri = rtrim($uri, '/'); // Remove trailing slashes
         
+        // Ignore requests for static files
+        if (preg_match('/\.(css|js|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot)$/i', $uri)) {
+            return false; // Let the server handle static files
+        }
+        
         foreach ($this->routes[$method] as $route => $callback) {
             $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
             if (preg_match("#^$routePattern$#", $uri, $matches)) {
