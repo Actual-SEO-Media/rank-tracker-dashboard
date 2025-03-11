@@ -61,58 +61,58 @@ $router->get("/logout", function () {
 //     $userController->editUser($id);
 // });
 
-$router->post("/edit-user", function () {
-    $userController = new UserController();
-    $userController->editUser();
-});
+// $router->post("/edit-user", function () {
+//     $userController = new UserController();
+//     $userController->editUser();
+// });
 
 // Default homepage - show client list
 $router->get("", function () {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $clientController = new ClientController();
     $clientController->index();
 });
 
 // Show reports for a specific client
 $router->get("/reports/{domain}", function ($domain) {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $clientController = new ClientController();
     $clientController->reports(htmlspecialchars($domain));
 });
 
 // Show import form or process import
 $router->post("/import", function () {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $importController = new ImportController();
     $importController->index('');
 });
 
 $router->get("/import", function () {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $importController = new ImportController();
     $importController->index('');
 });
 
 $router->get("/import/{domain}", function ($domain) {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $importController = new ImportController();
     $importController->index(htmlspecialchars($domain));
 });
 
 $router->get("/details/{report_id}", function ($report_id) {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $reportController = new ReportController();
     $reportController->details(htmlspecialchars($report_id));
 });
 
 $router->get("/positions/{report_id}", function ($report_id) {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $reportController = new ReportController();
     $reportController->positions(htmlspecialchars($report_id));
 });
 
 $router->get("/keywords/{report_id}", function ($report_id) {
-    UserController::requireAdmin(); // Require admin access
+    // UserController::requireAdmin(); // Require admin access
     $reportController = new ReportController();
     $reportController->keywords(htmlspecialchars($report_id));
 });
