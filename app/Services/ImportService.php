@@ -114,8 +114,6 @@ class ImportService {
             $stmt->execute();
         }
         
-        return;
-
         // Setup report model data
         $this->reportModel->client_domain = $clientDomain;
         $this->reportModel->report_period = $reportPeriod;
