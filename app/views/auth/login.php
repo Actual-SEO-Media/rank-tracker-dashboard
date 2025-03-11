@@ -1,9 +1,7 @@
 <?php
-require_once __DIR__ . '/../layouts/header.php';
+require_once BASE_PATH . '/app/views/layout/header.php';
 ?>
 
-<div class="bg-white">
-  <!-- Flex container for centering items -->
   <div class="flex h-screen flex-col items-center justify-center">
     <!-- Container for login form -->
     <div class="max-h-auto mx-auto max-w-xl">
@@ -12,22 +10,30 @@ require_once __DIR__ . '/../layouts/header.php';
         <p class="text-xl font-semibold">Login</p>
         <p class="text-gray-500">Enter your username and password to access your account.</p>
       </div>
+      
+      <!-- Display error message if any -->
+      <?php if (isset($_SESSION['login_error'])): ?>
+        <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
+          <?php echo $_SESSION['login_error']; ?>
+          <?php unset($_SESSION['login_error']); ?>
+        </div>
+      <?php endif; ?>
+      
       <!-- Login form -->
-      <form class="w-full">
+      <form class="w-full" method="POST" action="<?php echo BASE_URL; ?>/login">
         <div class="mb-10 space-y-3">
           <div class="space-y-3">
             <!-- Username label and input field -->
             <div class="space-y-2">
               <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="username">Username</label>
-              <input class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="username" placeholder="johndoe" name="username" />
+              <input class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="username" placeholder="johndoe" name="username" required />
             </div>
             <!-- Password label and input field -->
             <div class="space-y-2">
               <label class="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70" for="password">Password</label>
-              <input class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="password" type="password" placeholder="••••••••" name="password" />
+              <input class="border-input bg-background ring-offset-background placeholder:text-muted-foreground focus-visible:ring-ring flex h-10 w-full rounded-md border px-3 py-2 text-sm file:border-0 file:bg-transparent file:text-sm file:font-medium focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50" id="password" type="password" placeholder="••••••••" name="password" required />
             </div>
           </div>
-          <!-- Login button -->
           <button class="ring-offset-background focus-visible:ring-ring flex h-10 w-full items-center justify-center whitespace-nowrap rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" type="submit">Login</button>
         </div>
       </form>
@@ -60,6 +66,5 @@ require_once __DIR__ . '/../layouts/header.php';
       </div>
     </div>
   </div>
-</div>
 
-<?php require_once __DIR__ . '/../layouts/footer.php'; ?>
+<?php require_once BASE_PATH . '/app/views/layout/footer.php'; ?>

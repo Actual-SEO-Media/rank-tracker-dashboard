@@ -20,14 +20,15 @@ class ClientController {
      * and the latest report if available.
      */
     public function index() {
-        $clientsResult = $this->clientModel->getAll();
+        $clientsData = $this->clientModel->getAll();
         $clients = [];
         
-        while ($row = $clientsResult->fetch_assoc()) {
+        foreach ($clientsData as $row) {
             $domain = $row['client_domain'];
-            $reports = $this->reportModel->getClientReports($domain);
-            $totalReports = $reports->num_rows;
-            $latestReport = $totalReports > 0 ? $reports->fetch_assoc() : null;
+            $reportsList = $this->reportModel->getClientReports($domain) ?? [];
+            
+            $totalReports = count($reportsList);
+            $latestReport = $totalReports > 0 ? $reportsList[0] : null;
             
             $clients[] = [
                 'domain' => $domain,
@@ -45,13 +46,7 @@ class ClientController {
      * @param string $domain The domain of the client whose reports are being retrieved.
      */
     public function reports($domain) {
-        $reportsResult = $this->reportModel->getClientReports($domain);
-        $reports = [];
-        
-        while ($row = $reportsResult->fetch_assoc()) {
-            $reports[] = $row;
-        }
-        
+        $reports = $this->reportModel->getClientReports($domain);
         include __DIR__ . '/../views/reports/index.php';
     }
-}
+} 
