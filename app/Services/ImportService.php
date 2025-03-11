@@ -109,7 +109,6 @@ class ImportService {
      * @return int Report ID
      */
     private function handleReportEntry($conn, $clientDomain, $reportPeriod, $filename, $isBaseline) {
-        return;
         // Clear any existing baseline if this is marked as baseline        
         if ($isBaseline) {
             $stmt = $conn->prepare("UPDATE reports SET is_baseline = 0 WHERE client_domain = ?");
