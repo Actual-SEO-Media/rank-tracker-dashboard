@@ -36,7 +36,7 @@
                         <?php else: ?>
                             <li><a href="/login" class="text-gray-800 hover:text-gray-600">Login</a></li>
                         <?php endif; ?>
-        </ul>
+                    </ul>
         <!-- Mobile menu button -->
         <div class="flex md:hidden">
           <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-slate-800 focus:outline-none" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">
