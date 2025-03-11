@@ -62,8 +62,6 @@ class ImportService {
                 $uploadResult['original_filename'], 
                 $isBaseline
             );
-
-            return;
             
             $result['report_id'] = $reportId;
             
@@ -115,6 +113,8 @@ class ImportService {
             $stmt->bind_param("s", $clientDomain);
             $stmt->execute();
         }
+        
+        return;
 
         // Setup report model data
         $this->reportModel->client_domain = $clientDomain;
