@@ -8,6 +8,7 @@ define('BASE_PATH', __DIR__);
 
 require __DIR__ . '/vendor/autoload.php';
 
+use App\Controllers\Router;
 use App\Controllers\ClientController;
 use App\Controllers\ReportController;
 use App\Controllers\ImportController;
@@ -16,68 +17,58 @@ $action = isset($_GET['action']) ? $_GET['action'] : 'home';
 $id = isset($_GET['id']) ? (int)$_GET['id'] : null;
 $domain = isset($_GET['domain']) ? $_GET['domain'] : null;
 
-$clientController = new ClientController();
-$reportController = new ReportController();
-$importController = new ImportController();
+$router = new Router();
 
-switch ($action) {
-    case 'home':
-        // Default homepage - show client list
-        $clientController->index();
-        break;
-        
-    case 'reports':
-        // Show reports for a specific client
-        if ($domain) {
-            $clientController->reports($domain);
-        } else {
-            // Redirect to homepage if no domain specified
-            header('Location: index.php');
-            exit;
-        }
-        break;
-        
-    case 'details':
-        // Show detailed report view
-        if ($id) {
-            $reportController->details($id);
-        } else {
-            // Redirect to homepage if no ID specified
-            header('Location: index.php');
-            exit;
-        }
-        break;
+// Default homepage - show client list
+$router->get("", function () {
+    $clientController = new ClientController();
 
-    case 'keywords':
-        // Show keywordpres for a report
-        if ($id) {
-            $reportController->keywords($id);
-        } else {
-            // Redirect to homepage if no ID specified
-            header('Location: index.php');
-            exit;
-        }
-        break;
-        
-    case 'positions':
-        // Show search positions for a report
-        if ($id) {
-            $reportController->positions($id);
-        } else {
-            // Redirect to homepage if no ID specified
-            header('Location: index.php');
-            exit;
-        }
-        break;
-        
-    case 'import':
-        // Show import form or process import
-        $importController->index();
-        break;
-        
-    default:
-        // Handle unknown actions
-        header('HTTP/1.0 404 Not Found');
-        echo '404 - Page not found';
-        break;
-}
+    $clientController->index();
+});
+
+// Show reports for a specific client
+$router->get("/reports/{domain}", function ($domain) {
+    $clientController = new ClientController();
+
+    $clientController->reports(htmlspecialchars($domain));
+});
+
+// Show import form or process import
+$router->post("/import", function () {
+    $importController = new ImportController();
+
+    $importController->index('');
+});
+
+$router->get("/import", function () {
+    $importController = new ImportController();
+
+    $importController->index('');
+});
+
+$router->get("/import/{domain}", function ($domain) {
+    $importController = new ImportController();
+
+    $importController->index(htmlspecialchars($domain));
+});
+
+$router->get("/details/{report_id}", function ($report_id) {
+    $reportController = new ReportController();
+
+    $reportController->details(htmlspecialchars($report_id));
+});
+
+$router->get("/positions/{report_id}", function ($report_id) {
+    $reportController = new ReportController();
+
+    $reportController->positions(htmlspecialchars($report_id));
+});
+
+$router->get("/keywords/{report_id}", function ($report_id) {
+    $reportController = new ReportController();
+
+    $reportController->keywords(htmlspecialchars($report_id));
+});
+
+// Dispatch the request
+$router->dispatch($_SERVER['REQUEST_METHOD'], $_SERVER['REQUEST_URI']);

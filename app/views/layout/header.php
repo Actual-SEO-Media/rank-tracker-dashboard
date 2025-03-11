@@ -19,7 +19,7 @@
     <div class="container mx-auto px-4">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
-          <a href="index.php" class="flex items-center space-x-2">
+          <a href="<?php echo SITE_URL; ?>" class="flex items-center space-x-2">
             <svg xmlns="http://www.w3.org/2000/svg" class="h-8 w-8 text-blue-500" viewBox="0 0 20 20" fill="currentColor">
               <path d="M5.5 16a3.5 3.5 0 01-.369-6.98 4 4 0 117.753-1.977A4.5 4.5 0 1113.5 16h-8z" />
             </svg>
@@ -27,10 +27,10 @@
           </a>
         </div>
         <nav class="hidden md:flex items-center space-x-1">
-          <a href="index.php" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-slate-800 hover:text-white transition-colors">
+          <a href="<?php echo SITE_URL; ?>" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-slate-800 hover:text-white transition-colors">
             Clients
           </a>
-          <a href="index.php?action=import" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-slate-800 hover:text-white transition-colors">
+          <a href="<?php echo SITE_URL; ?>/import" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-slate-800 hover:text-white transition-colors">
             Import Data
           </a>
         </nav>
@@ -47,10 +47,10 @@
     <!-- Mobile menu, show/hide based on menu state -->
     <div class="hidden md:hidden" id="mobile-menu">
       <div class="px-2 pt-2 pb-3 space-y-1 sm:px-3 bg-slate-900">
-        <a href="index.php" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-slate-800">
+        <a href="<?php echo SITE_URL; ?>" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-slate-800">
           Clients
         </a>
-        <a href="index.php?action=import" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-slate-800">
+        <a href="<?php echo SITE_URL; ?>/import" class="block px-3 py-2 rounded-md text-base font-medium text-white hover:bg-slate-800">
           Import Data
         </a>
       </div>

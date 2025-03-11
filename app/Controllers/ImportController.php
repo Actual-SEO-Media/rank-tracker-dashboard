@@ -14,8 +14,7 @@ class ImportController {
      * Displays the import form and handles form submission.
      * If a file is uploaded, it processes the import and returns success or error messages.
      */ 
-    public function index() {
-        $domain = isset($_GET['domain']) ? $_GET['domain'] : '';
+    public function index($domain) {
         $success = false;
         $success_message = '';
         $error = '';
