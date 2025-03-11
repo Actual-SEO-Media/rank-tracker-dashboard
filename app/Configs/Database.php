@@ -1,28 +1,43 @@
 <?php
 namespace App\Configs;
 
+use PDO;
+use PDOException;
+
 class Database {
-    private $host = 'localhost';
-    private $user = 'root'; // Change to your MySQL username
-    private $pass = ''; // Change to your MySQL password
-    private $name = 'asm_seo_reports';
-    public $conn;
+    private static $instance = null;
+    private $connection;
     
-    public function getConnection() {
-        $this->conn = null;
+    private function __construct() {
+        $host = DB_HOST;
+        $db = DB_NAME;
+        $user = DB_USER;
+        $pass = DB_PASS;
+        $charset = 'utf8mb4';
+        
+        $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
+        $options = [
+            PDO::ATTR_ERRMODE => PDO::ERRMODE_EXCEPTION,
+            PDO::ATTR_DEFAULT_FETCH_MODE => PDO::FETCH_ASSOC,
+            PDO::ATTR_EMULATE_PREPARES => false,
+        ];
         
         try {
-            $this->conn = new \mysqli($this->host, $this->user, $this->pass, $this->name);
-            $this->conn->set_charset("utf8mb4");
-            
-            if ($this->conn->connect_error) {
-                throw new Exception("Connection failed: " . $this->conn->connect_error);
-            }
-        } catch(Exception $e) {
-            echo "Database connection error: " . $e->getMessage();
-            die();
+            $this->connection = new PDO($dsn, $user, $pass, $options);
+        } catch (PDOException $e) {
+            // In production, log this error rather than displaying it
+            throw new PDOException($e->getMessage(), (int)$e->getCode());
         }
-        
-        return $this->conn;
+    }
+    
+    public static function getInstance() {
+        if (self::$instance === null) {
+            self::$instance = new self();
+        }
+        return self::$instance;
+    }
+    
+    public function getConnection() {
+        return $this->connection;
     }
 }

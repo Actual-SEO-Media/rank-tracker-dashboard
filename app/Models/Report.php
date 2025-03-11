@@ -16,7 +16,7 @@ class Report {
     public $is_baseline;
     
     public function __construct() {
-        $database = new Database();
+        $database = Database::getInstance();
         $this->conn = $database->getConnection();
     }
     
@@ -27,11 +27,8 @@ class Report {
                   ORDER BY report_period DESC";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $domain);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        return $result;
+        $stmt->execute([$domain]);
+        return $stmt->fetchAll(\PDO::FETCH_ASSOC);
     }
     
     // Get single report by ID
@@ -39,12 +36,10 @@ class Report {
         $query = "SELECT * FROM " . $this->table . " WHERE report_id = ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $id);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$id]);
+        $row = $stmt->fetch();
         
-        if ($result->num_rows > 0) {
-            $row = $result->fetch_assoc();
+        if ($row) {
             $this->report_id = $row['report_id'];
             $this->import_date = $row['import_date'];
             $this->report_period = $row['report_period'];
@@ -64,15 +59,10 @@ class Report {
                   WHERE client_domain = ? AND report_period = ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("ss", $domain, $period);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$domain, $period]);
+        $row = $stmt->fetch();
         
-        if ($row = $result->fetch_assoc()) {
-            return $row['count'] > 0;
-        }
-        
-        return false;
+        return $row['count'] > 0;
     }
     
     // Create new report
@@ -82,48 +72,40 @@ class Report {
                   VALUES (?, ?, ?, ?, ?)";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("ssssi", 
-            $this->import_date, 
-            $this->report_period, 
-            $this->client_domain, 
-            $this->file_name, 
+        $stmt->execute([
+            $this->import_date,
+            $this->report_period,
+            $this->client_domain,
+            $this->file_name,
             $this->is_baseline
-        );
+        ]);
         
-        if ($stmt->execute()) {
-            $this->report_id = $this->conn->insert_id;
+        if ($stmt->rowCount() > 0) {
+            $this->report_id = $this->conn->lastInsertId();
             return true;
         }
         
         return false;
     }
     
-
     // Delete a report by ID
     public function delete($id = null) {
-    // If no ID is provided, use the current report_id property
-    $id_to_delete = $id ?: $this->report_id;
-    
-    // Make sure we have a valid ID to delete
-    if (!$id_to_delete) {
-        return false;
+        $id_to_delete = $id ?: $this->report_id;
+        
+        if (!$id_to_delete) {
+            return false;
+        }
+        
+        $query = "DELETE FROM " . $this->table . " WHERE report_id = ?";
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([$id_to_delete]);
     }
-    
-    $query = "DELETE FROM " . $this->table . " WHERE report_id = ?";
-    $stmt = $this->conn->prepare($query);
-    $stmt->bind_param("i", $id_to_delete);
-    
-    if ($stmt->execute()) {
-        return true;
-    }
-    return false;
-}
     
     // Get all unique client domains
     public function getClientList() {
         $query = "SELECT DISTINCT client_domain FROM " . $this->table . " ORDER BY client_domain";
-        $result = $this->conn->query($query);
-        return $result;
+        $stmt = $this->conn->query($query);
+        return $stmt;
     }
     
     // Get baseline report for a client
@@ -131,35 +113,27 @@ class Report {
         $query = "SELECT * FROM " . $this->table . " WHERE client_domain = ? AND is_baseline = 1";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("s", $domain);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        if ($result->num_rows > 0) {
-            return $result->fetch_assoc();
-        }
-        
-        return false;
+        $stmt->execute([$domain]);
+        return $stmt->fetch();
     }
 
     public function update() {
-    $query = "UPDATE " . $this->table . " 
-              SET import_date = ?, report_period = ?, client_domain = ?, 
-                  file_name = ?, is_baseline = ?
-              WHERE report_id = ?";
-    
-    $stmt = $this->conn->prepare($query);
-    $stmt->bind_param("ssssii",
-        $this->import_date,
-        $this->report_period,
-        $this->client_domain,
-        $this->file_name,
-        $this->is_baseline,
-        $this->report_id
-    );
-    
-    return $stmt->execute();
-}
+        $query = "UPDATE " . $this->table . " 
+                  SET import_date = ?, report_period = ?, client_domain = ?, 
+                      file_name = ?, is_baseline = ?
+                  WHERE report_id = ?";
+        
+        $stmt = $this->conn->prepare($query);
+        return $stmt->execute([
+            $this->import_date,
+            $this->report_period,
+            $this->client_domain,
+            $this->file_name,
+            $this->is_baseline,
+            $this->report_id
+        ]);
+    }
+
     /**
      * Get report ID by client domain and period
      * 
@@ -174,16 +148,10 @@ class Report {
                 LIMIT 1";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("ss", $domain, $period);
-        $stmt->execute();
-        $result = $stmt->get_result();
+        $stmt->execute([$domain, $period]);
+        $row = $stmt->fetch();
         
-        if ($result && $result->num_rows > 0) {
-            $row = $result->fetch_assoc();
-            return $row['report_id'];
-        }
-        
-        return false;
+        return $row ? $row['report_id'] : false;
     }
 
     /**
@@ -201,36 +169,22 @@ class Report {
                 LIMIT ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("si", $domain, $limit);
-        $stmt->execute();
-        $result = $stmt->get_result();
-        
-        $periods = array();
-        if ($result) {
-            while ($row = $result->fetch_assoc()) {
-                $periods[] = $row;
-            }
-        }
-        
-        return $periods;
+        $stmt->execute([$domain, $limit]);
+        return $stmt->fetchAll();
     }
 
     public function setBaseline($isBaseline = true) {
-    // First clear existing baseline if setting a new one
-    if ($isBaseline) {
-        $clearQuery = "UPDATE " . $this->table . " 
-                      SET is_baseline = 0 
-                      WHERE client_domain = ? AND report_id != ?";
-        $clearStmt = $this->conn->prepare($clearQuery);
-        $clearStmt->bind_param("si", $this->client_domain, $this->report_id);
-        $clearStmt->execute();
+        // First clear existing baseline if setting a new one
+        if ($isBaseline) {
+            $clearQuery = "UPDATE " . $this->table . " 
+                          SET is_baseline = 0 
+                          WHERE client_domain = ? AND report_id != ?";
+            $clearStmt = $this->conn->prepare($clearQuery);
+            $clearStmt->execute([$this->client_domain, $this->report_id]);
+        }
+        
+        // Set current report baseline status
+        $this->is_baseline = $isBaseline ? 1 : 0;
+        return $this->update();
     }
-    
-    // Set current report baseline status
-    $this->is_baseline = $isBaseline ? 1 : 0;
-    return $this->update();
 }
-
-    
-}
-

@@ -30,7 +30,7 @@ class ImportService {
      * @param bool $isBaseline Whether this is a baseline report
      * @return array Result with success status, error message, and report details
      */
-    public function importRankingData($file, $clientDomain, $reportPeriod, $isBaseline) {
+    public function processImport($file, $clientDomain, $reportPeriod, $isBaseline = false) {
         $result = [
             'success' => false,
             'error' => '',
@@ -49,9 +49,9 @@ class ImportService {
         $filepath = $uploadResult['filepath'];
         
         // Start transaction
-        $database = new Database();
+        $database = Database::getInstance();
         $conn = $database->getConnection();
-        $conn->begin_transaction();
+        $conn->beginTransaction();
         
         try {
             // Create or update report entry and get report ID
@@ -68,7 +68,7 @@ class ImportService {
             // Parse CSV file
             $parsedData = $this->dataParser->parseCSVFile($filepath);
             if ($parsedData === false) {
-                throw new Exception("Failed to process CSV file");
+                throw new \Exception("Failed to process CSV file");
             }
             
             // Clear existing data for this report
@@ -84,9 +84,9 @@ class ImportService {
             // Delete temporary file
             $this->fileUploadService->deleteFile($filepath);
             
-        } catch (Exception $e) {
+        } catch(\Exception $e) {
             // Rollback transaction on error
-            $conn->rollback();
+            $conn->rollBack();
             $result['error'] = 'Error during import: ' . $e->getMessage();
             
             // Clean up file on error
@@ -99,19 +99,18 @@ class ImportService {
     /**
      * Create or update report entry
      * 
-     * @param mysqli $conn Database connection
+     * @param \PDO $conn Database connection
      * @param string $clientDomain Client domain
      * @param string $reportPeriod Report period
      * @param string $filename Original file name
      * @param bool $isBaseline Whether this is a baseline report
      * @return int Report ID
      */
-    private function handleReportEntry($conn, $clientDomain, $reportPeriod, $filename, $isBaseline) {
+    private function handleReportEntry(\PDO $conn, $clientDomain, $reportPeriod, $filename, $isBaseline) {
         // Clear any existing baseline if this is marked as baseline
         if ($isBaseline) {
             $stmt = $conn->prepare("UPDATE reports SET is_baseline = 0 WHERE client_domain = ?");
-            $stmt->bind_param("s", $clientDomain);
-            $stmt->execute();
+            $stmt->execute([$clientDomain]);
         }
         
         // Setup report model data
@@ -123,28 +122,23 @@ class ImportService {
         
         if ($this->reportModel->exists($clientDomain, $reportPeriod)) {
             // Get existing report ID
-            $reportResult = $this->reportModel->getClientReports($clientDomain);
-            $reportId = null;
+            $stmt = $conn->prepare("SELECT report_id FROM reports WHERE client_domain = ? AND report_period = ?");
+            $stmt->execute([$clientDomain, $reportPeriod]);
+            $row = $stmt->fetch();
             
-            while ($row = $reportResult->fetch_assoc()) {
-                if ($row['report_period'] === $reportPeriod) {
-                    $reportId = $row['report_id'];
-                    break;
-                }
+            if ($row) {
+                // Update existing report
+                $this->reportModel->report_id = $row['report_id'];
+                $this->reportModel->update();
+                return $row['report_id'];
             }
-            
-            // Update existing report
-            $this->reportModel->report_id = $reportId;
-            $this->reportModel->update();
-        } else {
-            // Create new report
-            if (!$this->reportModel->create()) {
-                throw new Exception("Failed to create report record");
-            }
-            $reportId = $this->reportModel->report_id;
         }
         
-        return $reportId;
+        // Create new report
+        if (!$this->reportModel->create()) {
+            throw new \Exception("Failed to create report record");
+        }
+        return $this->reportModel->report_id;
     }
     
     /**
@@ -180,7 +174,9 @@ class ImportService {
                 $this->rankingDataModel->serp_features = $engineData['serp_features'];
                 $this->rankingDataModel->url = $engineData['url'];
                 
-                $this->rankingDataModel->save($engine);
+                if (!$this->rankingDataModel->save($engine)) {
+                    throw new \Exception("Failed to save ranking data for engine: " . $engine);
+                }
             }
         }
     }

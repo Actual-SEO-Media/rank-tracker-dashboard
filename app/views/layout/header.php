@@ -26,14 +26,17 @@
             <span class="text-white font-bold text-xl tracking-tight">ASM Rank Tracker</span>
           </a>
         </div>
-        <nav class="hidden md:flex items-center space-x-1">
-          <a href="<?php echo SITE_URL; ?>" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-slate-800 hover:text-white transition-colors">
-            Clients
-          </a>
-          <a href="<?php echo SITE_URL; ?>/import" class="px-3 py-2 rounded-md text-sm font-medium text-white hover:bg-slate-800 hover:text-white transition-colors">
-            Import Data
-          </a>
-        </nav>
+         <ul class="flex space-x-6">
+                        <?php if (isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin'): ?>
+                            <li><a href="/" class="text-gray-800 hover:text-gray-600">Clients</a></li>
+                            <li><a href="/import" class="text-gray-800 hover:text-gray-600">Import</a></li>
+                        <?php endif; ?>
+                        <?php if (isset($_SESSION['user_id'])): ?>
+                            <li><a href="/logout" class="text-gray-800 hover:text-gray-600">Logout</a></li>
+                        <?php else: ?>
+                            <li><a href="/login" class="text-gray-800 hover:text-gray-600">Login</a></li>
+                        <?php endif; ?>
+        </ul>
         <!-- Mobile menu button -->
         <div class="flex md:hidden">
           <button type="button" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-white hover:bg-slate-800 focus:outline-none" onclick="document.getElementById('mobile-menu').classList.toggle('hidden')">

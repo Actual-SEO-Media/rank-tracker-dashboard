@@ -3,6 +3,7 @@ namespace App\Models;
 
 use App\Configs\Database;
 use App\Configs\EngineConfig;
+use App\Configs\Session;
 
 class RankingData {
     private $conn;
@@ -20,104 +21,112 @@ class RankingData {
     public $url;
     
     public function __construct() {
-        $database = new Database();
+        $database = Database::getInstance();
         $this->conn = $database->getConnection();
     }
     
     // Get search data for a report by engine
     public function getByReportAndEngine($report_id, $engine) {
+        if (!$this->hasAccess($report_id)) {
+            throw new \Exception("Access denied to report data");
+        }
+
         $table = $this->getTableName($engine);
         
         $query = "SELECT * FROM " . $table . " WHERE report_id = ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $report_id);
-        $stmt->execute();
-        
-        return $stmt->get_result();
+        $stmt->execute([$report_id]);
+        return $stmt;
     }
     
     // Get filtered search data (non-empty URLs)
     public function getFilteredByReportAndEngine($report_id, $engine) {
+        if (!$this->hasAccess($report_id)) {
+            throw new \Exception("Access denied to report data");
+        }
+
         $table = $this->getTableName($engine);
         
         $query = "SELECT * FROM " . $table . " WHERE report_id = ? AND url != ''";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $report_id);
-        $stmt->execute();
-        
-        return $stmt->get_result();
+        $stmt->execute([$report_id]);
+        return $stmt;
     }
     
     // Save search data
     public function save($engine) {
-        $table = $this->getTableName($engine);
-        
-        $query = "INSERT INTO " . $table . " 
-                 (report_id, keyword, visibility, visibility_difference, rank, previous_rank, difference, serp_features, url) 
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
-        
-        $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("isiiiisss", 
-            $this->report_id,
-            $this->keyword,
-            $this->visibility,
-            $this->visibility_difference,
-            $this->rank,
-            $this->previous_rank,
-            $this->difference,
-            $this->serp_features,
-            $this->url
-        );
-        
-        return $stmt->execute();
+        try {
+            // Validate and sanitize data
+            $this->validateData();
+            $this->sanitizeData();
+
+            $table = $this->getTableName($engine);
+            
+            $query = "INSERT INTO " . $table . " 
+                     (report_id, keyword, visibility, visibility_difference, rank, previous_rank, difference, serp_features, url) 
+                     VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            
+            $stmt = $this->conn->prepare($query);
+            return $stmt->execute([
+                $this->report_id,
+                $this->keyword,
+                $this->visibility,
+                $this->visibility_difference,
+                $this->rank,
+                $this->previous_rank,
+                $this->difference,
+                $this->serp_features,
+                $this->url
+            ]);
+        } catch (\Exception $e) {
+            error_log("Error saving ranking data: " . $e->getMessage());
+            throw $e;
+        }
     }
     
     // Clear existing data for a report
     public function clearReportData($report_id, $engine) {
+        if (!$this->hasAccess($report_id)) {
+            throw new \Exception("Access denied to report data");
+        }
+
         $table = $this->getTableName($engine);
         
         $query = "DELETE FROM " . $table . " WHERE report_id = ?";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->bind_param("i", $report_id);
-        
-        return $stmt->execute();
+        return $stmt->execute([$report_id]);
     }
     
     // Calculate statistics for a report
     public function calculateReportStats($report_id) {
         $stats = [
-            'total_keywords' => 0,
             'first_position' => 0,
             'top_5_positions' => 0,
             'first_page' => 0,
             'first_two_pages' => 0,
+            'new_listings' => 0,
             'moved_up' => 0,
             'moved_down' => 0,
             'no_change' => 0,
-            'new_listings' => 0,
             'net_position_change' => 0,
             'visibility_score' => 0,
             'visibility_percentage' => 0,
-            'google_count' => 0,
-            'google_mobile_count' => 0,
-            'yahoo_count' => 0,
-            'bing_count' => 0
+            'total_keywords' => 0
         ];
         
-        // Get data from all engines
-        $engines = ['google', 'google_mobile', 'yahoo', 'bing'];
+        $engines = EngineConfig::getEngineKeys();
         $all_keywords = [];
         $all_rankings = [];
         
         foreach ($engines as $engine) {
             $result = $this->getFilteredByReportAndEngine($report_id, $engine);
             $count_key = $engine . '_count';
-            $stats[$count_key] = $result->num_rows;
+            $stats[$count_key] = $result->rowCount();
             
-            while ($row = $result->fetch_assoc()) {
+            while ($row = $result->fetch()) {
                 $all_keywords[$row['keyword']] = true;
                 $all_rankings[] = $row;
                 
@@ -169,37 +178,100 @@ class RankingData {
     
     private function getTableName($engine) {
         if (!in_array($engine, EngineConfig::getEngineKeys())) {
-            throw new Exception("Invalid search engine: " . $engine);
+            throw new \Exception("Invalid search engine: " . $engine);
+        }
+        return $engine . '_data';
     }
-    return $engine . '_data';
-}
 
-    public function getKeywords($report_id){
+    public function getKeywords($report_id) {
+        if (!$this->hasAccess($report_id)) {
+            throw new \Exception("Access denied to report data");
+        }
+
         $query = "
             SELECT DISTINCT atbl.keyword
             FROM (
-                SELECT keyword FROM google_data WHERE report_id = {$report_id}
+                SELECT keyword FROM google_data WHERE report_id = ?
                 UNION
-                SELECT keyword FROM google_mobile_data WHERE report_id = {$report_id}
+                SELECT keyword FROM google_mobile_data WHERE report_id = ?
                 UNION
-                SELECT keyword FROM yahoo_data WHERE report_id = {$report_id}
+                SELECT keyword FROM yahoo_data WHERE report_id = ?
                 UNION
-                SELECT keyword FROM bing_data WHERE report_id = {$report_id}
+                SELECT keyword FROM bing_data WHERE report_id = ?
             ) AS atbl
             ORDER BY atbl.keyword ASC;
         ";
         
         $stmt = $this->conn->prepare($query);
-        $stmt->execute();
+        $stmt->execute([$report_id, $report_id, $report_id, $report_id]);
         
-        $result = $stmt->get_result();
-
         $data = [];
+        while ($row = $stmt->fetch()) {
+            $data[] = htmlspecialchars($row['keyword'], ENT_QUOTES, 'UTF-8');
+        }
         
-        while ($row = $result->fetch_assoc()) {
-            $data[] = $row['keyword'];
+        return $data;
+    }
+
+    // Add these new private methods for validation and sanitization
+    private function validateData() {
+        // Validate required fields
+        if (empty($this->report_id)) {
+            throw new \Exception("Report ID is required");
+        }
+        if (empty($this->keyword)) {
+            throw new \Exception("Keyword is required");
         }
 
-        return $data;
+        // Validate numeric fields
+        if (!is_numeric($this->rank) || $this->rank < 0) {
+            throw new \Exception("Invalid rank value");
+        }
+        if (!is_numeric($this->visibility) || $this->visibility < 0 || $this->visibility > 100) {
+            throw new \Exception("Invalid visibility value");
+        }
+        if (!is_numeric($this->visibility_difference) || $this->visibility_difference < -100 || $this->visibility_difference > 100) {
+            throw new \Exception("Invalid visibility difference value");
+        }
+        if (!is_numeric($this->previous_rank) || $this->previous_rank < 0) {
+            throw new \Exception("Invalid previous rank value");
+        }
+        if (!is_numeric($this->difference)) {
+            throw new \Exception("Invalid difference value");
+        }
+    }
+
+    private function sanitizeData() {
+        // Sanitize string fields
+        $this->keyword = htmlspecialchars(strip_tags($this->keyword), ENT_QUOTES, 'UTF-8');
+        $this->serp_features = htmlspecialchars(strip_tags($this->serp_features), ENT_QUOTES, 'UTF-8');
+        
+        // Sanitize URL
+        if (!empty($this->url)) {
+            $this->url = filter_var($this->url, FILTER_SANITIZE_URL);
+            if (!filter_var($this->url, FILTER_VALIDATE_URL)) {
+                $this->url = ''; // Clear invalid URLs
+            }
+        }
+    }
+
+    private function hasAccess($report_id) {
+        $session = Session::getInstance();
+        
+        // Check if user is logged in and is an admin
+        if (!$session->isLoggedIn()) {
+            error_log("Access denied: User is not an admin");
+            return false;
+        }
+
+        // Verify report exists
+        $stmt = $this->conn->prepare("SELECT report_id FROM reports WHERE report_id = ?");
+        $stmt->execute([$report_id]);
+        if (!$stmt->fetch()) {
+            error_log("Access denied: Report {$report_id} not found");
+            return false;
+        }
+
+        return true;
     }
 }

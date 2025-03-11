@@ -131,7 +131,7 @@ class ReportController {
         $result = $this->rankingDataModel->getFilteredByReportAndEngine($report_id, $engine);
         $data = [];
         
-        while ($row = $result->fetch_assoc()) {
+        while ($row = $result->fetch(\PDO::FETCH_ASSOC)) {
             $data[] = $row;
         }
         
