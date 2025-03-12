@@ -4,5 +4,8 @@
         "psr-4": {
             "App\\": "app/"
         }
+    },
+    "require": {
+        "kreait/firebase-php": "^7.18"
     }
 }

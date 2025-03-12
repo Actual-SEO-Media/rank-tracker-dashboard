@@ -2,145 +2,106 @@
 namespace App\Models;
 use App\Configs\Database;
 
-use PDO;
-
 class User {
-    private $db;
+    private $conn;
+    private $table = 'users';
+    
+    // User properties
+    public $id;
+    public $firebase_uid;
+    public $email;
+    public $is_admin;
+    public $created_at;
     
     public function __construct() {
-        $database = Database::getInstance();
-        $this->db = $database->getConnection();
+        $this->conn = Database::getInstance()->getConnection();
     }
-    
-    public function findByUsername($username) {
-        $stmt = $this->db->prepare("SELECT * FROM users WHERE username = :username");
-        $stmt->execute(['username' => $username]);
-        return $stmt->fetch(PDO::FETCH_ASSOC);
+    /**
+     * Find a user by Firebase UID
+     * 
+     * @param string $uid Firebase UID
+     * @return array|false User data or false if not found
+     */
+    public function findByFirebaseUid($uid) {
+        $statement = $this->conn->prepare("SELECT * FROM users WHERE firebase_uid = :uid");
+        $statement->execute(['firebase_uid' => $uid]);
+        return $statement->fetch();
+
     }
-    
-    public function create($userData) {
-        // Hash the password
-        $userData['password'] = password_hash($userData['password'], PASSWORD_DEFAULT);
-        
-        $stmt = $this->db->prepare("
-            INSERT INTO users (username, password, email, role) 
-            VALUES (:username, :password, :email, :role)
-        ");
-        
-        return $stmt->execute([
-            'username' => $userData['username'],
-            'password' => $userData['password'],
-            'email' => $userData['email'],
-            'role' => $userData['role'] ?? 'user'
+    /**
+     * Create a new user
+     * 
+     * @param string $uid Firebase UID
+     * @param string $email Email
+     * @return bool True if user was created, false otherwise
+     */
+    public function create($uid, $email) {
+        $statement = $this->conn->prepare("INSERT INTO users (firebase_uid, email, is_admin) VALUES (:uid, :email, 0)");
+        return $statement->execute([
+            'firebase_uid' => $uid,
+            'email' => $email,
+            'is_admin' => 0
         ]);
     }
-    
-    public function verifyPassword($user, $password) {
-        echo "<div style='background: #f8f9fa; padding: 10px; margin: 10px 0; border: 1px solid #ddd;'>";
-        echo "<h4>Password Verification Debug</h4>";
+
+    /**
+     * Update admin status
+     * 
+     * @param int $userId User ID
+     * @param bool $isAdmin Admin status
+     * @return bool Success or failure
+     */
+    public function updateAdminStatus($userId, $isAdmin) {
+        $statement = $this->conn->prepare(
+            "UPDATE {$this->table} SET is_admin = :is_admin WHERE id = :id"
+        );
         
-        // Check if password is empty
-        if (empty($password)) {
-            echo "<p style='color: red;'>Error: Password is empty</p>";
-            echo "</div>";
-            return false;
-        }
+        return $statement->execute([
+            'is_admin' => $isAdmin ? 1 : 0,
+            'id' => $userId
+        ]);
+    }
+    /**
+     * Get all users
+     * 
+     * @return array All users
+     */
+    public function getAll() {
+        $statement = $this->conn->prepare("SELECT * FROM {$this->table} ORDER BY created_at DESC");
+        $statement->execute();
         
-        // Check if user has a password hash
-        if (empty($user['password'])) {
-            echo "<p style='color: red;'>Error: No password hash found in user data</p>";
-            echo "</div>";
-            return false;
-        }
+        return $statement->fetchAll();
+    }
+
+     /**
+     * Check if user is admin
+     * 
+     * @param int $userId User ID
+     * @return bool True if admin, false otherwise
+     */
+    public function isAdmin($userId) {
+        $statement = $this->conn->prepare(
+            "SELECT is_admin FROM {$this->table} WHERE id = :id LIMIT 1"
+        );
         
-        echo "<p>Password length: " . strlen($password) . " characters</p>";
-        echo "<p>Password hash length: " . strlen($user['password']) . " characters</p>";
-        echo "<p>First 6 chars of hash: " . substr($user['password'], 0, 6) . "...</p>";
+        $statement->execute(['id' => $userId]);
+        $result = $statement->fetch();
         
-        // Verify the hash format
-        if (!preg_match('/^\$2[ayb]\$[0-9]{2}\$/', $user['password'])) {
-            echo "<p style='color: red;'>Warning: Password hash doesn't appear to be in correct bcrypt format</p>";
-        }
-        
-        $result = password_verify($password, $user['password']);
-        echo "<p>Verification result: " . ($result ? '<span style="color: green;">Success</span>' : '<span style="color: red;">Failed</span>') . "</p>";
-        echo "</div>";
-        
-        return $result;
+        return $result ? (bool)$result['is_admin'] : false;
     }
     
-    public function getAllUsers() {
-        $stmt = $this->db->query("SELECT id, username, email, role, created_at FROM users");
-        return $stmt->fetchAll(PDO::FETCH_ASSOC);
-    }
-    
-    public function deleteUser($id) {
-        $stmt = $this->db->prepare("DELETE FROM users WHERE id = :id");
-        return $stmt->execute(['id' => $id]);
-    }
-    
-    public function updateUser($id, $userData) {
-        // If password is being updated, hash it
-        if (!empty($userData['password'])) {
-            $userData['password'] = password_hash($userData['password'], PASSWORD_DEFAULT);
-            
-            $stmt = $this->db->prepare("
-                UPDATE users 
-                SET username = :username, 
-                    password = :password, 
-                    email = :email, 
-                    role = :role 
-                WHERE id = :id
-            ");
-            
-            return $stmt->execute([
-                'id' => $id,
-                'username' => $userData['username'],
-                'password' => $userData['password'],
-                'email' => $userData['email'],
-                'role' => $userData['role']
-            ]);
-        } else {
-            // Update without changing password
-            $stmt = $this->db->prepare("
-                UPDATE users 
-                SET username = :username, 
-                    email = :email, 
-                    role = :role 
-                WHERE id = :id
-            ");
-            
-            return $stmt->execute([
-                'id' => $id,
-                'username' => $userData['username'],
-                'email' => $userData['email'],
-                'role' => $userData['role']
-            ]);
-        }
-    }
-    
-    public function createAdminUser() {
-        $adminData = [
-            'username' => 'admin',
-            'password' => 'admin123',
-            'email' => 'admin@example.com',
-            'role' => 'admin'
-        ];
+    /**
+     * Delete a user
+     * 
+     * @param int $userId User ID
+     * @return bool Success or failure
+     */
+    public function delete($userId) {
+        $statement = $this->conn->prepare(
+            "DELETE FROM {$this->table} WHERE id = :id"
+        );
         
-        // Check if admin already exists
-        $stmt = $this->db->prepare("SELECT id FROM users WHERE username = :username");
-        $stmt->execute(['username' => $adminData['username']]);
-        if ($stmt->fetch()) {
-            // Admin exists, update password
-            $hashedPassword = password_hash($adminData['password'], PASSWORD_DEFAULT);
-            $updateStmt = $this->db->prepare("UPDATE users SET password = :password WHERE username = :username");
-            return $updateStmt->execute([
-                'username' => $adminData['username'],
-                'password' => $hashedPassword
-            ]);
-        }
-        
-        // Create new admin user
-        return $this->create($adminData);
+        return $statement->execute(['id' => $userId]);
     }
+    
 }
