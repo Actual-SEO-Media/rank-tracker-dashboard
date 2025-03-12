@@ -48,46 +48,67 @@ class ImportService {
         // Get file path
         $filepath = $uploadResult['filepath'];
         
-        // Start transaction
-        $database = new Database();
-        $conn = $database->getConnection();
-        $conn->begin_transaction();
-        
         try {
-            // Create or update report entry and get report ID
-            $reportId = $this->handleReportEntry(
-                $conn, 
-                $clientDomain, 
-                $reportPeriod, 
-                $uploadResult['original_filename'], 
-                $isBaseline
-            );
-            
-            $result['report_id'] = $reportId;
-            
-            // Parse CSV file
+            // Parse CSV file - Do this BEFORE starting the transaction
             $parsedData = $this->dataParser->parseCSVFile($filepath);
             if ($parsedData === false) {
                 throw new Exception("Failed to process CSV file");
             }
             
-            // Clear existing data for this report
-            $this->clearExistingData($reportId);
+            // Start transaction AFTER file processing
+            $database = new Database();
+            $conn = $database->getConnection();
             
-            // Save parsed data to database
-            $this->saveRankingData($reportId, $parsedData);
+            // Set a shorter timeout for the transaction
+            $conn->query("SET innodb_lock_wait_timeout = 20");
             
-            // Commit transaction
-            $conn->commit();
-            $result['success'] = true;
+            $conn->begin_transaction();
+            
+            try {
+                // Create or update report entry and get report ID
+                $reportId = $this->handleReportEntry(
+                    $conn, 
+                    $clientDomain, 
+                    $reportPeriod, 
+                    $uploadResult['original_filename'], 
+                    $isBaseline
+                );
+                
+                $result['report_id'] = $reportId;
+                
+                // Clear existing data for this report
+                $this->clearExistingData($reportId);
+                
+                // Save parsed data to database
+                $this->saveRankingData($reportId, $parsedData);
+                
+                // Commit transaction
+                $conn->commit();
+                $result['success'] = true;
+            } catch (Exception $e) {
+                // Rollback transaction on error
+                $conn->rollback();
+                throw $e; // Re-throw to be caught by outer try-catch
+            } finally {
+                // Close the database connection
+                if ($conn && $conn instanceof mysqli) {
+                    $conn->close();
+                }
+            }
             
             // Delete temporary file
             $this->fileUploadService->deleteFile($filepath);
             
         } catch (Exception $e) {
-            // Rollback transaction on error
-            $conn->rollback();
-            $result['error'] = 'Error during import: ' . $e->getMessage();
+            // Handle any exception
+            $errorMessage = $e->getMessage();
+            
+            // Check for specific error types
+            if (strpos($errorMessage, 'Lock wait timeout') !== false) {
+                $result['error'] = 'Database is busy. Please try again in a few moments.';
+            } else {
+                $result['error'] = 'Error during import: ' . $errorMessage;
+            }
             
             // Clean up file on error
             $this->fileUploadService->deleteFile($filepath);
@@ -107,19 +128,16 @@ class ImportService {
      * @return int Report ID
      */
     private function handleReportEntry($conn, $clientDomain, $reportPeriod, $filename, $isBaseline) {
-        // Clear any existing baseline if this is marked as baseline        
-        if ($isBaseline) {
-            $stmt = $conn->prepare("UPDATE reports SET is_baseline = 0 WHERE client_domain = ?");
-            $stmt->bind_param("s", $clientDomain);
-            $stmt->execute();
-        }
+        $isBaseline = (bool)$isBaseline;
+
         
         // Setup report model data
         $this->reportModel->client_domain = $clientDomain;
         $this->reportModel->report_period = $reportPeriod;
         $this->reportModel->import_date = date('Y-m-d');
         $this->reportModel->file_name = $filename;
-        $this->reportModel->is_baseline = $isBaseline ? 1 : 0;
+        $this->reportModel->is_baseline = 0;
+
         
         if ($this->reportModel->exists($clientDomain, $reportPeriod)) {
             // Get existing report ID
@@ -139,10 +157,23 @@ class ImportService {
         } else {
             // Create new report
             if (!$this->reportModel->create()) {
-                throw new \Exception("Failed to create report record");
+                throw new Exception("Failed to create report record");
             }
             $reportId = $this->reportModel->report_id;
         }
+
+        if ($isBaseline) {
+            $clearStmt = $conn->prepare("UPDATE reports SET is_baseline = 0 WHERE client_domain = ?");
+            $clearStmt->bind_param("s", $clientDomain);
+            $clearStmt->execute();
+            $clearStmt->close();
+            
+            // Now set this report as baseline
+            $baselineStmt = $conn->prepare("UPDATE reports SET is_baseline = 1 WHERE report_id = ?");
+            $baselineStmt->bind_param("i", $reportId);
+            $baselineStmt->execute();
+            $baselineStmt->close();
+    }
         
         return $reportId;
     }

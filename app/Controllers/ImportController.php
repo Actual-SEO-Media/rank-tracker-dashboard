@@ -23,6 +23,7 @@ class ImportController {
         if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $result = $this->handleFormSubmission();
             $success = $result['success'];
+            $success_message = $result['success_message'];
             $error = $result['error'];
             $domain = $result['domain'] ?? $domain;
             $report_id = $result['report_id'] ?? null;
@@ -71,11 +72,19 @@ class ImportController {
         $isBaseline = isset($_POST['is_baseline']) ? true : false;
         
         // Call service to handle import
-        return $this->importService->importRankingData(
+        $result = $this->importService->importRankingData(
             $_FILES['csv_file'],
             $clientDomain,
             $reportPeriod,
             $isBaseline
         );
+        
+        // Add success message if import was successful
+        if ($result['success']) {
+            $baselineText = $isBaseline ? " and set as baseline" : "";
+            $result['success_message'] = "Data imported successfully{$baselineText}! You can now view the report.";
+        }
+        
+        return $result;
     }
 }
