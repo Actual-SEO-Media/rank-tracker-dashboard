@@ -1,5 +1,4 @@
 <?php
-
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
@@ -8,7 +7,6 @@ define('BASE_PATH', __DIR__);
 
 // Load configuration
 require_once __DIR__ . '/app/Configs/AuthConfig.php';
-
 require __DIR__ . '/vendor/autoload.php';
 
 use App\Controllers\Router;
@@ -17,9 +15,10 @@ use App\Controllers\ReportController;
 use App\Controllers\ImportController;
 use App\Controllers\UserController;
 
+// Initialize router
 $router = new Router();
 
-// Auth routes
+// Public routes (no authentication required)
 $router->get("/login", function () {
     $userController = new UserController();
     $userController->showLogin();
@@ -35,84 +34,50 @@ $router->get("/logout", function () {
     $userController->logout();
 });
 
-// // User management routes (admin only)
-// $router->get("/register", function () {
-//     $userController = new UserController();
-//     $userController->showRegister();
-// });
-
-// $router->post("/register", function () {
-//     $userController = new UserController();
-//     $userController->register();
-// });
-
-// $router->get("/admin/users", function () {
-//     $userController = new UserController();
-//     $userController->showUsers();
-// });
-
-// $router->post("/delete-user", function () {
-//     $userController = new UserController();
-//     $userController->deleteUser();
-// });
-
-// $router->get("/edit-user/{id}", function ($id) {
-//     $userController = new UserController();
-//     $userController->editUser($id);
-// });
-
-// $router->post("/edit-user", function () {
-//     $userController = new UserController();
-//     $userController->editUser();
-// });
+// All other routes - simplified approach
+// Note: You don't need to call protected() since our new Router 
+// protects everything except explicitly public routes
 
 // Default homepage - show client list
 $router->get("", function () {
-    // UserController::requireAdmin(); // Require admin access
     $clientController = new ClientController();
     $clientController->index();
 });
 
-// Show reports for a specific client
+// Client reports
 $router->get("/reports/{domain}", function ($domain) {
-    // UserController::requireAdmin(); // Require admin access
     $clientController = new ClientController();
     $clientController->reports(htmlspecialchars($domain));
 });
 
-// Show import form or process import
+// Import routes
 $router->post("/import", function () {
-    // UserController::requireAdmin(); // Require admin access
     $importController = new ImportController();
     $importController->index('');
 });
 
 $router->get("/import", function () {
-    // UserController::requireAdmin(); // Require admin access
     $importController = new ImportController();
     $importController->index('');
 });
 
 $router->get("/import/{domain}", function ($domain) {
-    // UserController::requireAdmin(); // Require admin access
     $importController = new ImportController();
     $importController->index(htmlspecialchars($domain));
 });
 
+// Report details, positions, and keywords
 $router->get("/details/{report_id}", function ($report_id) {
-    // UserController::requireAdmin(); // Require admin access
     $reportController = new ReportController();
     $reportController->details(htmlspecialchars($report_id));
 });
 
 $router->get("/positions/{report_id}", function ($report_id) {
-    // UserController::requireAdmin(); // Require admin access
     $reportController = new ReportController();
     $reportController->positions(htmlspecialchars($report_id));
 });
 
 $router->get("/keywords/{report_id}", function ($report_id) {
-    // UserController::requireAdmin(); // Require admin access
     $reportController = new ReportController();
     $reportController->keywords(htmlspecialchars($report_id));
 });
