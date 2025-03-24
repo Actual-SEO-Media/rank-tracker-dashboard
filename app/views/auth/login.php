@@ -1,9 +1,5 @@
 <?php
 require_once BASE_PATH . '/app/views/layout/header.php';
-use App\Configs\Session;
-$session = Session::getInstance();
-use App\Configs\Session;
-$session = Session::getInstance();
 ?>
 
   <div class="flex h-screen flex-col items-center justify-center">
@@ -14,14 +10,7 @@ $session = Session::getInstance();
         <p class="text-xl font-semibold">Login</p>
         <p class="text-gray-500">Enter your username and password to access your account.</p>
       </div>
-      
-      <!-- Display error message if any -->
-      <?php if ($session->hasFlash('login_error')): ?>
-        <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          <?php echo $session->getFlash('login_error'); ?>
-        </div>
-      <?php endif; ?>
-      
+          
       <!-- Login form -->
         <form class="w-full" method="POST" action="<?php echo BASE_URL . '/login'; ?>">
         <div class="mb-10 space-y-3">
