@@ -2,6 +2,8 @@
 require_once BASE_PATH . '/app/views/layout/header.php';
 use App\Configs\Session;
 $session = Session::getInstance();
+use App\Configs\Session;
+$session = Session::getInstance();
 ?>
 
   <div class="flex h-screen flex-col items-center justify-center">
@@ -14,10 +16,9 @@ $session = Session::getInstance();
       </div>
       
       <!-- Display error message if any -->
-      <?php if (isset($_SESSION['login_error'])): ?>
+      <?php if ($session->hasFlash('login_error')): ?>
         <div class="mb-4 p-3 bg-red-100 text-red-700 rounded-md">
-          <?php echo $_SESSION['login_error']; ?>
-          <?php unset($_SESSION['login_error']); ?>
+          <?php echo $session->getFlash('login_error'); ?>
         </div>
       <?php endif; ?>
       

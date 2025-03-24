@@ -4,6 +4,7 @@ namespace App\Controllers;
 
 use App\Configs\Database;
 use App\Configs\Session;
+use App\Configs\Session;
 use App\Models\User;
 
 class UserController {

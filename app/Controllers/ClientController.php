@@ -25,7 +25,7 @@ class ClientController {
         
         foreach ($clientsData as $row) {
             $domain = $row['client_domain'];
-            $reportsList = $this->reportModel->getClientReports($domain);
+            $reportsList = $this->reportModel->getClientReports($domain) ?? [];
             
             $totalReports = count($reportsList);
             $latestReport = $totalReports > 0 ? $reportsList[0] : null;
