@@ -27,9 +27,6 @@ class RankingData {
     
     // Get search data for a report by engine
     public function getByReportAndEngine($report_id, $engine) {
-        if (!$this->hasAccess($report_id)) {
-            throw new \Exception("Access denied to report data");
-        }
 
         $table = $this->getTableName($engine);
         
@@ -42,14 +39,10 @@ class RankingData {
     
     // Get filtered search data (non-empty URLs)
     public function getFilteredByReportAndEngine($report_id, $engine) {
-        if (!$this->hasAccess($report_id)) {
-            throw new \Exception("Access denied to report data");
-        }
 
         $table = $this->getTableName($engine);
         
         $query = "SELECT * FROM " . $table . " WHERE report_id = ? AND url != ''";
-        
         $stmt = $this->conn->prepare($query);
         $stmt->execute([$report_id]);
         return $stmt;
@@ -88,9 +81,6 @@ class RankingData {
     
     // Clear existing data for a report
     public function clearReportData($report_id, $engine) {
-        if (!$this->hasAccess($report_id)) {
-            throw new \Exception("Access denied to report data");
-        }
 
         $table = $this->getTableName($engine);
         
@@ -184,10 +174,6 @@ class RankingData {
     }
 
     public function getKeywords($report_id) {
-        if (!$this->hasAccess($report_id)) {
-            throw new \Exception("Access denied to report data");
-        }
-
         $query = "
             SELECT DISTINCT atbl.keyword
             FROM (
@@ -255,23 +241,5 @@ class RankingData {
         }
     }
 
-    private function hasAccess($report_id) {
-        $session = Session::getInstance();
-        
-        // Check if user is logged in and is an admin
-        if (!$session->isLoggedIn()) {
-            error_log("Access denied: User is not an admin");
-            return false;
-        }
-
-        // Verify report exists
-        $stmt = $this->conn->prepare("SELECT report_id FROM reports WHERE report_id = ?");
-        $stmt->execute([$report_id]);
-        if (!$stmt->fetch()) {
-            error_log("Access denied: Report {$report_id} not found");
-            return false;
-        }
-
-        return true;
-    }
+ 
 }

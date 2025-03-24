@@ -1,40 +1,52 @@
 <?php
 namespace App\Configs;
 
+/**
+ * Session Management Class - Simplified for stable session ID
+ */
 class Session {
     private static $instance = null;
-    private $started = false;
 
+    /**
+     * Private constructor
+     */
     private function __construct() {
         if (session_status() === PHP_SESSION_NONE) {
-            // Set secure session parameters
-            ini_set('session.cookie_httponly', 1);
-            
-            // Only set secure cookie if using HTTPS
-            if (isset($_SERVER['HTTPS']) && $_SERVER['HTTPS'] === 'on') {
-                ini_set('session.cookie_secure', 1);
-            }
-            
-            ini_set('session.cookie_samesite', 'Strict');
-            ini_set('session.gc_maxlifetime', AUTH_TIMEOUT); // Use the timeout from config
-            
+            session_set_cookie_params([
+            'lifetime' => 86400,  // 1 day
+            'path' => '/',
+            'domain' => '', // Use default domain for local development
+            'secure' => false,  // Set to false for non-HTTPS
+            'httponly' => true,  // Prevents JavaScript from accessing the session cookie
+            'samesite' => 'Lax'  // Ensures cookie is sent with cross-site requests
+        ]);
+
+
+            // Start session
             session_start();
-            
-            $this->started = true;
-            
-            // Check if session has expired
-            if (isset($_SESSION['last_activity']) && (time() - $_SESSION['last_activity'] > AUTH_TIMEOUT)) {
-                // Session expired, destroy it
-                session_unset();
-                session_destroy();
-                session_start();
+
+            // Initialize last activity if not set
+            if (!isset($_SESSION['last_activity'])) {
+                $_SESSION['last_activity'] = time();
             }
-            
-            // Update last activity time stamp
-            $_SESSION['last_activity'] = time();
+
+            // Check for session timeout (e.g., 30 minutes)
+            if (time() - $_SESSION['last_activity'] > 1800) {
+                $this->destroy(); // Session expired, destroy it
+            }
+
+            $_SESSION['last_activity'] = time(); // Update last activity timestamp
+        }
+
+        // Initialize flash messages array if not set
+        if (!isset($_SESSION['_flash'])) {
+            $_SESSION['_flash'] = [];
         }
     }
 
+    /**
+     * Get the singleton instance
+     */
     public static function getInstance() {
         if (self::$instance === null) {
             self::$instance = new self();
@@ -42,70 +54,119 @@ class Session {
         return self::$instance;
     }
 
+    /**
+     * Set a session variable
+     */
     public function set($key, $value) {
         $_SESSION[$key] = $value;
     }
 
+    /**
+     * Get a session variable
+     */
     public function get($key, $default = null) {
-        return $_SESSION[$key] ?? $default;
+        return isset($_SESSION[$key]) ? $_SESSION[$key] : $default;
     }
 
-    public function delete($key) {
+    /**
+     * Check if a session variable exists
+     */
+    public function has($key) {
+        return isset($_SESSION[$key]);
+    }
+
+    /**
+     * Remove a session variable
+     */
+    public function remove($key) {
         if (isset($_SESSION[$key])) {
             unset($_SESSION[$key]);
         }
     }
 
-    public function isLoggedIn() {
-        return isset($_SESSION['user_role']) && in_array($_SESSION['user_role'], ['admin', 'user']);
+    /**
+     * Clear all session data
+     */
+    public function clear() {
+        session_unset();
     }
-    
-    public function isAdmin() {
-        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+
+    /**
+     * Destroy the session
+     */
+    public function destroy() {
+        session_unset();
+        session_destroy();
     }
-    
+
+    /**
+     * Regenerate the session ID - use only during login
+     */
     public function regenerateId() {
-        if ($this->started) {
+        if (!headers_sent()) {
             session_regenerate_id(true);
         }
     }
-    
-    public function destroy() {
-        if ($this->started) {
-            session_unset();
-            session_destroy();
-            $this->started = false;
-        }
-    }
-    
+
+    /**
+     * Set a flash message
+     */
     public function setFlash($key, $message) {
-        $_SESSION['flash'][$key] = $message;
+        $_SESSION['_flash'][$key] = $message;
     }
-    
-    public function getFlash($key) {
-        if (isset($_SESSION['flash'][$key])) {
-            $message = $_SESSION['flash'][$key];
-            unset($_SESSION['flash'][$key]);
+
+    /**
+     * Get a flash message
+     */
+    public function getFlash($key, $default = null) {
+        if (isset($_SESSION['_flash'][$key])) {
+            $message = $_SESSION['_flash'][$key];
+            unset($_SESSION['_flash'][$key]);
             return $message;
         }
-        return null;
+        return $default;
     }
-    
+
+    /**
+     * Check if a flash message exists
+     */
     public function hasFlash($key) {
-        return isset($_SESSION['flash'][$key]);
+        return isset($_SESSION['_flash'][$key]);
     }
 
-    public function generateCsrfToken() {
-        if (!isset($_SESSION['csrf_token'])) {
-            $_SESSION['csrf_token'] = bin2hex(random_bytes(32));
-        }
-        return $_SESSION['csrf_token'];
+    /**
+     * Check if user is logged in
+     */
+    public function isLoggedIn() {
+        return isset($_SESSION['user_role']) && 
+               in_array($_SESSION['user_role'], ['admin', 'user']);
     }
 
-    public function validateCsrfToken($token) {
-        if (!isset($_SESSION['csrf_token']) || $token !== $_SESSION['csrf_token']) {
-            return false;
-        }
-        return true;
-}
+    /**
+     * Check if user is an admin
+     */
+    public function isAdmin() {
+        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+    }
+
+    /**
+     * Login a user
+     */
+    public function login($userId, $username, $role) {
+        $this->set('user_id', $userId);
+        $this->set('username', $username);
+        $this->set('user_role', $role);
+        $this->set('logged_in', true);
+        $this->set('last_activity', time());
+
+        // Only regenerate ID during login
+        $this->regenerateId();
+    }
+
+    /**
+     * Logout a user
+     */
+    public function logout() {
+        $this->destroy();
+    }
 }

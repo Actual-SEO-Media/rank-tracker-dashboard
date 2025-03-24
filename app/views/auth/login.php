@@ -1,5 +1,7 @@
 <?php
 require_once BASE_PATH . '/app/views/layout/header.php';
+use App\Configs\Session;
+$session = Session::getInstance();
 ?>
 
   <div class="flex h-screen flex-col items-center justify-center">
@@ -20,7 +22,7 @@ require_once BASE_PATH . '/app/views/layout/header.php';
       <?php endif; ?>
       
       <!-- Login form -->
-      <form class="w-full" method="POST" action="<?php echo BASE_URL; ?>/login">
+        <form class="w-full" method="POST" action="<?php echo BASE_URL . '/login'; ?>">
         <div class="mb-10 space-y-3">
           <div class="space-y-3">
             <!-- Username label and input field -->

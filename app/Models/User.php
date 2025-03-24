@@ -31,7 +31,7 @@ class User {
             'username' => $userData['username'],
             'password' => $userData['password'],
             'email' => $userData['email'],
-            'role' => $userData['role'] ?? 'user'
+            'role' => $userData['role'] ?? 'admin'
         ]);
     }
     
