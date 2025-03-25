@@ -1,9 +1,40 @@
 <IfModule mod_rewrite.c>
-RewriteEngine On
-RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
-RewriteBase /rank-tracker-dashboard/
-RewriteRule ^index\.php$ - [L]
-RewriteCond %{REQUEST_FILENAME} !-f
-RewriteCond %{REQUEST_FILENAME} !-d
-RewriteRule . /rank-tracker-dashboard/index.php [L]
+    RewriteEngine On
+    
+    # Handle Authorization Header for APIs
+    RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]
+    
+    # Get base path from environment settings
+    RewriteBase /rank-tracker-dashboard/
+    
+    # Don't rewrite files or directories
+    RewriteCond %{REQUEST_FILENAME} !-f
+    RewriteCond %{REQUEST_FILENAME} !-d
+    
+    # Rewrite everything else to index.php
+    RewriteRule ^(.*)$ index.php [L,QSA]
+</IfModule>
+
+# Disable directory browsing
+Options -Indexes
+
+# Protect sensitive files
+<FilesMatch "^\.env|\.env\.|composer\.json|composer\.lock|\.(git|yml|log|bak)$">
+    <IfModule mod_authz_core.c>
+        Require all denied
+    </IfModule>
+    <IfModule !mod_authz_core.c>
+        Order allow,deny
+        Deny from all
+    </IfModule>
+</FilesMatch>
+
+# PHP settings
+<IfModule mod_php.c>
+    # Maximum upload file size
+    php_value upload_max_filesize 10M
+    php_value post_max_size 12M
+    
+    # Sessions
+    php_value session.cookie_httponly 1
 </IfModule>
