@@ -41,16 +41,6 @@ require_once BASE_PATH . '/app/views/layout/header.php';
         <button class="ring-offset-background focus-visible:ring-ring flex h-10 w-full items-center justify-center whitespace-nowrap rounded-md bg-black px-4 py-2 text-sm font-medium text-white transition-colors hover:bg-black/90 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50" type="submit">Login</button>
       </div>
     </form>
-    
-    <?php if ($config->get('app_env') !== 'production'): ?>
-    <!-- Dev environment login hint -->
-    <div class="mt-4 p-3 bg-yellow-50 border border-yellow-200 rounded-md">
-      <p class="text-xs text-yellow-700">
-        <strong>Development Environment</strong><br>
-        Default login: username: <strong>admin</strong>, password: <strong>admin123</strong>
-      </p>
-    </div>
-    <?php endif; ?>
   </div>
 </div>
 

@@ -8,5 +8,4 @@ composer.lock
 .env.production
 .env.development
 .env.local
-/tailwind-build/
 /tailwind-build/node_modules
