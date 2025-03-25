@@ -5,3 +5,6 @@
 composer.phar
 composer.lock
 /tests/*
+.env.production
+.env.development
+.env.local
