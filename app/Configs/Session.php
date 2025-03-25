@@ -13,25 +13,28 @@ class Session {
     private function __construct() {
         if (session_status() === PHP_SESSION_NONE) {
             session_set_cookie_params([
-            'lifetime' => 86400,  // 1 day
-            'path' => '/',
-            'domain' => '', // Use default domain for local development
-            'secure' => false,  // Set to false for non-HTTPS
-            'httponly' => true,  // Prevents JavaScript from accessing the session cookie
-            'samesite' => 'Lax'  // Ensures cookie is sent with cross-site requests
-        ]);
-
+                'lifetime' => 86400,  // 1 day
+                'path' => BASE_URL,   // Match the application's base URL
+                'domain' => '',       // Use default domain for local development
+                'secure' => false,    // Set to true for HTTPS only
+                'httponly' => true,   // Prevents JavaScript from accessing the session cookie
+                'samesite' => 'Lax'   // Ensures cookie is sent with cross-site requests
+            ]);
 
             // Start session
             session_start();
+            
+            // Log session ID for debugging
+            error_log("Session started/resumed. Session ID: " . session_id());
 
             // Initialize last activity if not set
             if (!isset($_SESSION['last_activity'])) {
                 $_SESSION['last_activity'] = time();
             }
 
-            // Check for session timeout (e.g., 30 minutes)
-            if (time() - $_SESSION['last_activity'] > 1800) {
+            // Check for session timeout using AUTH_TIMEOUT constant from config
+            if (time() - $_SESSION['last_activity'] > AUTH_TIMEOUT) {
+                error_log("Session expired. Last activity: " . date('Y-m-d H:i:s', $_SESSION['last_activity']));
                 $this->destroy(); // Session expired, destroy it
             }
 
@@ -95,6 +98,7 @@ class Session {
      * Destroy the session
      */
     public function destroy() {
+        error_log("Destroying session. Session ID: " . session_id());
         session_unset();
         session_destroy();
     }
@@ -104,7 +108,9 @@ class Session {
      */
     public function regenerateId() {
         if (!headers_sent()) {
+            $oldSessionId = session_id();
             session_regenerate_id(true);
+            error_log("Session ID regenerated. Old: $oldSessionId, New: " . session_id());
         }
     }
 
@@ -138,35 +144,48 @@ class Session {
      * Check if user is logged in
      */
     public function isLoggedIn() {
-        return isset($_SESSION['user_role']) && 
+        $isLoggedIn = isset($_SESSION['user_role']) && 
+               isset($_SESSION['logged_in']) &&
+               $_SESSION['logged_in'] === true &&
                in_array($_SESSION['user_role'], ['admin', 'user']);
+        
+        error_log("isLoggedIn check: " . ($isLoggedIn ? 'true' : 'false'));
+        return $isLoggedIn;
     }
 
     /**
      * Check if user is an admin
      */
     public function isAdmin() {
-        return isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+        $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+        error_log("isAdmin check: " . ($isAdmin ? 'true' : 'false'));
+        return $isAdmin;
     }
 
     /**
      * Login a user
      */
     public function login($userId, $username, $role) {
+        error_log("Setting up login session for user ID: $userId, username: $username, role: $role");
+        
+        // Regenerate ID first for security
+        $this->regenerateId();
+        
+        // Set session variables
         $this->set('user_id', $userId);
         $this->set('username', $username);
         $this->set('user_role', $role);
         $this->set('logged_in', true);
         $this->set('last_activity', time());
-
-        // Only regenerate ID during login
-        $this->regenerateId();
+        
+        error_log("Login complete. Session data: " . print_r($_SESSION, true));
     }
 
     /**
      * Logout a user
      */
     public function logout() {
+        error_log("Logging out user: " . ($this->has('username') ? $this->get('username') : 'unknown'));
         $this->destroy();
     }
 }
