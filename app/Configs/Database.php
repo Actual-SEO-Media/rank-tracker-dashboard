@@ -4,6 +4,8 @@ namespace App\Configs;
 use PDO;
 use PDOException;
 
+// Include the configuration file where DB_PASS and other constants are defined
+
 class Database {
     private static $instance = null;
     private $connection;

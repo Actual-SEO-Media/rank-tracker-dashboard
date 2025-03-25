@@ -2,46 +2,60 @@
 namespace App\Configs;
 
 /**
- * Session Management Class - Simplified for stable session ID
+ * Session Management Class - Enhanced with configuration integration
  */
 class Session {
     private static $instance = null;
+    private $config;
 
     /**
      * Private constructor
      */
     private function __construct() {
+        $this->config = Config::getInstance();
+        
         if (session_status() === PHP_SESSION_NONE) {
+            $sessionSecure = $this->config->get('session_secure', false);
+            $sessionDomain = $this->config->get('session_domain', '');
+            $sessionLifetime = $this->config->get('session_lifetime', 86400);
+            $baseUrl = $this->config->get('base_url', '/');
+            
             session_set_cookie_params([
-                'lifetime' => 86400,  // 1 day
-                'path' => BASE_URL,   // Match the application's base URL
-                'domain' => '',       // Use default domain for local development
-                'secure' => false,    // Set to true for HTTPS only
-                'httponly' => true,   // Prevents JavaScript from accessing the session cookie
-                'samesite' => 'Lax'   // Ensures cookie is sent with cross-site requests
+                'lifetime' => $sessionLifetime,  // Default: 1 day
+                'path' => $baseUrl,              
+                'domain' => $sessionDomain,      
+                'secure' => $sessionSecure,      
+                'httponly' => true,              
+                'samesite' => 'Lax'              
             ]);
 
             // Start session
             session_start();
             
-            // Log session ID for debugging
-            error_log("Session started/resumed. Session ID: " . session_id());
+            // Log session ID if in debug mode
+            if ($this->config->isDebug()) {
+                error_log("Session started/resumed. Session ID: " . session_id());
+            }
 
             // Initialize last activity if not set
             if (!isset($_SESSION['last_activity'])) {
                 $_SESSION['last_activity'] = time();
             }
 
-            // Check for session timeout using AUTH_TIMEOUT constant from config
-            if (time() - $_SESSION['last_activity'] > AUTH_TIMEOUT) {
-                error_log("Session expired. Last activity: " . date('Y-m-d H:i:s', $_SESSION['last_activity']));
+            // Get timeout from configuration
+            $authTimeout = $this->config->get('auth_timeout', 3600);
+            
+            // Check for session timeout
+            if (time() - $_SESSION['last_activity'] > $authTimeout) {
+                if ($this->config->isDebug()) {
+                    error_log("Session expired. Last activity: " . date('Y-m-d H:i:s', $_SESSION['last_activity']));
+                }
                 $this->destroy(); // Session expired, destroy it
             }
 
             $_SESSION['last_activity'] = time(); // Update last activity timestamp
         }
 
-        // Initialize flash messages array if not set
         if (!isset($_SESSION['_flash'])) {
             $_SESSION['_flash'] = [];
         }
@@ -98,7 +112,9 @@ class Session {
      * Destroy the session
      */
     public function destroy() {
-        error_log("Destroying session. Session ID: " . session_id());
+        if ($this->config->isDebug()) {
+            error_log("Destroying session. Session ID: " . session_id());
+        }
         session_unset();
         session_destroy();
     }
@@ -110,7 +126,9 @@ class Session {
         if (!headers_sent()) {
             $oldSessionId = session_id();
             session_regenerate_id(true);
-            error_log("Session ID regenerated. Old: $oldSessionId, New: " . session_id());
+            if ($this->config->isDebug()) {
+                error_log("Session ID regenerated. Old: $oldSessionId, New: " . session_id());
+            }
         }
     }
 
@@ -149,7 +167,9 @@ class Session {
                $_SESSION['logged_in'] === true &&
                in_array($_SESSION['user_role'], ['admin', 'user']);
         
-        error_log("isLoggedIn check: " . ($isLoggedIn ? 'true' : 'false'));
+        if ($this->config->isDebug()) {
+            error_log("isLoggedIn check: " . ($isLoggedIn ? 'true' : 'false'));
+        }
         return $isLoggedIn;
     }
 
@@ -158,7 +178,9 @@ class Session {
      */
     public function isAdmin() {
         $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
-        error_log("isAdmin check: " . ($isAdmin ? 'true' : 'false'));
+        if ($this->config->isDebug()) {
+            error_log("isAdmin check: " . ($isAdmin ? 'true' : 'false'));
+        }
         return $isAdmin;
     }
 
@@ -166,7 +188,9 @@ class Session {
      * Login a user
      */
     public function login($userId, $username, $role) {
-        error_log("Setting up login session for user ID: $userId, username: $username, role: $role");
+        if ($this->config->isDebug()) {
+            error_log("Setting up login session for user ID: $userId, username: $username, role: $role");
+        }
         
         // Regenerate ID first for security
         $this->regenerateId();
@@ -178,14 +202,18 @@ class Session {
         $this->set('logged_in', true);
         $this->set('last_activity', time());
         
-        error_log("Login complete. Session data: " . print_r($_SESSION, true));
+        if ($this->config->isDebug()) {
+            error_log("Login complete. Session data: " . print_r($_SESSION, true));
+        }
     }
 
     /**
      * Logout a user
      */
     public function logout() {
-        error_log("Logging out user: " . ($this->has('username') ? $this->get('username') : 'unknown'));
+        if ($this->config->isDebug()) {
+            error_log("Logging out user: " . ($this->has('username') ? $this->get('username') : 'unknown'));
+        }
         $this->destroy();
     }
 }

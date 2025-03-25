@@ -1,7 +1,7 @@
 <?php
 namespace App\Controllers;
 
-require_once __DIR__ . '/../Configs/Constants.php';
+use App\Configs\Config;
 
 class Router {
     private $routes = [
@@ -11,12 +11,21 @@ class Router {
     
     private $protectedRoutes = [];
     private $publicRoutes = ['/login']; // Always public
+    private $baseUrl;
+    private $config;
+    public function __construct() {
+        // Get configuration
+        $this->config = Config::getInstance();
+        $this->baseUrl = $this->config->get('base_url');
+    }
 
     /**
      * Register a GET route
      */
     public function get($route, $callback) {
-        error_log("Registering GET route: " . $route);
+        if ($this->config->isDebug()) {
+            error_log("Registering GET route: " . $route);
+        }
         $this->routes['GET'][$route] = $callback;
         return $this;
     }
@@ -25,7 +34,9 @@ class Router {
      * Register a POST route
      */
     public function post($route, $callback) {
-        error_log("Registering POST route: " . $route);
+        if ($this->config->isDebug()) {
+            error_log("Registering POST route: " . $route);
+        }
         $this->routes['POST'][$route] = $callback;
         return $this;
     }
@@ -34,7 +45,9 @@ class Router {
      * Mark a route as protected
      */
     public function protected($route) {
-        error_log("Marking route as protected: " . $route);
+        if ($this->config->isDebug()) {
+            error_log("Marking route as protected: " . $route);
+        }
         $this->protectedRoutes[] = $route;
         return $this;
     }
@@ -46,7 +59,9 @@ class Router {
         // First check if this is a public route
         foreach ($this->publicRoutes as $publicRoute) {
             if ($uri === $publicRoute || strpos($uri, $publicRoute) === 0) {
-                error_log("Public route, no auth needed: " . $uri);
+                if ($this->config->isDebug()) {
+                    error_log("Public route, no auth needed: " . $uri);
+                }
                 return true; // Allow access to public routes
             }
         }
@@ -58,13 +73,18 @@ class Router {
         
         // Check if the user is logged in
         if (!isset($_SESSION['user_id']) || !isset($_SESSION['logged_in']) || $_SESSION['logged_in'] !== true) {
-            error_log("Authentication failed for URI: " . $uri);
+            if ($this->config->isDebug()) {
+                error_log("Authentication failed for URI: " . $uri);
+            }
             
             // Store current URL for redirect after login
             $_SESSION['redirect_url'] = $uri;
             
+            // Get the site URL from configuration
+            $siteUrl = $this->config->get('site_url');
+            
             // Redirect to login
-            header('Location: ' . SITE_URL . '/login');
+            header('Location: ' . $siteUrl . '/login');
             exit; // Critical - must exit to prevent further execution
         }
         
@@ -75,15 +95,17 @@ class Router {
      * Dispatch the request
      */
     public function dispatch($method, $uri) {
-        error_log("Dispatching request - Method: " . $method . ", Original URI: " . $uri);
+        if ($this->config->isDebug()) {
+            error_log("Dispatching request - Method: " . $method . ", Original URI: " . $uri);
+        }
         
         // Parse URI
         $uri = parse_url($uri, PHP_URL_PATH);
         $uri = rtrim($uri, '/'); // Remove trailing slashes
         
-        // Remove BASE_URL from the URI
-        if (strpos($uri, BASE_URL) === 0) {
-            $uri = substr($uri, strlen(BASE_URL));
+        // Remove BASE_URL from the URI if present
+        if (strpos($uri, $this->baseUrl) === 0) {
+            $uri = substr($uri, strlen($this->baseUrl));
         }
         
         // If URI is empty, treat as root
@@ -91,7 +113,9 @@ class Router {
             $uri = '';
         }
         
-        error_log("Final URI to match: " . $uri);
+        if ($this->config->isDebug()) {
+            error_log("Final URI to match: " . $uri);
+        }
         
         // Ignore static files
         if (preg_match('/\.(css|js|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot)$/i', $uri)) {
@@ -106,14 +130,18 @@ class Router {
             $routePattern = preg_replace('/\{([a-zA-Z0-9_]+)\}/', '([^/]+)', $route);
             
             if (preg_match("#^$routePattern$#", $uri, $matches)) {
-                error_log("Route matched: " . $route);
+                if ($this->config->isDebug()) {
+                    error_log("Route matched: " . $route);
+                }
                 array_shift($matches); // Remove full match
                 return call_user_func_array($callback, $matches);
             }
         }
 
         // No route matched
-        error_log("404 Not Found: " . $uri);
+        if ($this->config->isDebug()) {
+            error_log("404 Not Found: " . $uri);
+        }
         http_response_code(404);
         echo "404 Not Found";
     }

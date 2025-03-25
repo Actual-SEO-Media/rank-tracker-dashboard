@@ -1,13 +1,12 @@
 <?php
+
+$config = require_once __DIR__ . '/app/bootstrap.php';
+
 ini_set('display_errors', 1);
 ini_set('display_startup_errors', 1);
 error_reporting(E_ALL);
-
-define('BASE_PATH', __DIR__);
-
-// Load configuration
-require_once __DIR__ . '/app/Configs/AuthConfig.php';
-require __DIR__ . '/vendor/autoload.php';
+ini_set('log_errors', 1);
+ini_set('error_log', __DIR__ . '/php_error.log');
 
 use App\Controllers\Router;
 use App\Controllers\ClientController;
@@ -15,7 +14,6 @@ use App\Controllers\ReportController;
 use App\Controllers\ImportController;
 use App\Controllers\UserController;
 
-// Initialize router
 $router = new Router();
 
 // Public routes (no authentication required)
@@ -33,10 +31,6 @@ $router->get("/logout", function () {
     $userController = new UserController();
     $userController->logout();
 });
-
-// All other routes - simplified approach
-// Note: You don't need to call protected() since our new Router 
-// protects everything except explicitly public routes
 
 // Default homepage - show client list
 $router->get("", function () {
