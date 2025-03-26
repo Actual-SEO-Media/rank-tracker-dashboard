@@ -12,7 +12,6 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <!-- Custom styles -->
-    <link rel="stylesheet" href="assets/css/output.css">
 </head>
 <body class="bg-gray-50 min-h-screen">
      <header class="bg-slate-900 relative z-10">

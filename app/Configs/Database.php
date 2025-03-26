@@ -4,17 +4,18 @@ namespace App\Configs;
 use PDO;
 use PDOException;
 
-// Include the configuration file where DB_PASS and other constants are defined
-
 class Database {
     private static $instance = null;
     private $connection;
     
     private function __construct() {
-        $host = DB_HOST;
-        $db = DB_NAME;
-        $user = DB_USER;
-        $pass = DB_PASS;
+        // Get configuration from Config singleton
+        $config = Config::getInstance();
+        
+        $host = $config->get('db_host');
+        $db = $config->get('db_name');
+        $user = $config->get('db_user');
+        $pass = $config->get('db_pass');
         $charset = 'utf8mb4';
         
         $dsn = "mysql:host=$host;dbname=$db;charset=$charset";
@@ -25,8 +26,11 @@ class Database {
         ];
         
         try {
+            error_log("Attempting database connection to {$host}:{$db} with user {$user}");
             $this->connection = new PDO($dsn, $user, $pass, $options);
+            error_log("Database connection successful");
         } catch (PDOException $e) {
+            error_log("Database connection failed: " . $e->getMessage());
             // In production, log this error rather than displaying it
             throw new PDOException($e->getMessage(), (int)$e->getCode());
         }
