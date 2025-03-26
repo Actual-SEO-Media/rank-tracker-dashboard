@@ -14,19 +14,22 @@ class Session {
     private function __construct() {
         $this->config = Config::getInstance();
         
-        if (session_status() === PHP_SESSION_NONE) {
+        // Only start session if not already started and headers haven't been sent
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            // Get session configuration from Config
             $sessionSecure = $this->config->get('session_secure', false);
             $sessionDomain = $this->config->get('session_domain', '');
             $sessionLifetime = $this->config->get('session_lifetime', 86400);
             $baseUrl = $this->config->get('base_url', '/');
             
+            // Configure session parameters
             session_set_cookie_params([
-                'lifetime' => $sessionLifetime,  // Default: 1 day
-                'path' => $baseUrl,              
-                'domain' => $sessionDomain,      
-                'secure' => $sessionSecure,      
-                'httponly' => true,              
-                'samesite' => 'Lax'              
+                'lifetime' => $sessionLifetime,
+                'path' => $baseUrl,
+                'domain' => $sessionDomain,
+                'secure' => $sessionSecure,
+                'httponly' => true,
+                'samesite' => 'Lax'
             ]);
 
             // Start session
@@ -51,11 +54,16 @@ class Session {
                     error_log("Session expired. Last activity: " . date('Y-m-d H:i:s', $_SESSION['last_activity']));
                 }
                 $this->destroy(); // Session expired, destroy it
+                // Restart session after destroying the old one
+                session_start();
             }
 
             $_SESSION['last_activity'] = time(); // Update last activity timestamp
+        } else if ($this->config->isDebug() && headers_sent()) {
+            error_log("Cannot start session, headers already sent");
         }
 
+        // Initialize flash messages container if it doesn't exist
         if (!isset($_SESSION['_flash'])) {
             $_SESSION['_flash'] = [];
         }
@@ -129,6 +137,10 @@ class Session {
             if ($this->config->isDebug()) {
                 error_log("Session ID regenerated. Old: $oldSessionId, New: " . session_id());
             }
+        } else {
+            if ($this->config->isDebug()) {
+                error_log("Cannot regenerate session ID, headers already sent");
+            }
         }
     }
 
@@ -162,10 +174,9 @@ class Session {
      * Check if user is logged in
      */
     public function isLoggedIn() {
-        $isLoggedIn = isset($_SESSION['user_role']) && 
-               isset($_SESSION['logged_in']) &&
-               $_SESSION['logged_in'] === true &&
-               in_array($_SESSION['user_role'], ['admin', 'user']);
+        $isLoggedIn = isset($_SESSION['user_id']) && 
+                      isset($_SESSION['logged_in']) &&
+                      $_SESSION['logged_in'] === true;
         
         if ($this->config->isDebug()) {
             error_log("isLoggedIn check: " . ($isLoggedIn ? 'true' : 'false'));
@@ -177,7 +188,8 @@ class Session {
      * Check if user is an admin
      */
     public function isAdmin() {
-        $isAdmin = isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+        $isAdmin = $this->isLoggedIn() && isset($_SESSION['user_role']) && $_SESSION['user_role'] === 'admin';
+        
         if ($this->config->isDebug()) {
             error_log("isAdmin check: " . ($isAdmin ? 'true' : 'false'));
         }
@@ -190,6 +202,11 @@ class Session {
     public function login($userId, $username, $role) {
         if ($this->config->isDebug()) {
             error_log("Setting up login session for user ID: $userId, username: $username, role: $role");
+        }
+        
+        // Make sure session is started
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            session_start();
         }
         
         // Regenerate ID first for security
@@ -205,6 +222,8 @@ class Session {
         if ($this->config->isDebug()) {
             error_log("Login complete. Session data: " . print_r($_SESSION, true));
         }
+        
+        return true;
     }
 
     /**
@@ -214,6 +233,17 @@ class Session {
         if ($this->config->isDebug()) {
             error_log("Logging out user: " . ($this->has('username') ? $this->get('username') : 'unknown'));
         }
+        
+        // Make sure session is started before trying to destroy it
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            session_start();
+        }
+        
         $this->destroy();
+        
+        // If we need to start a new session after logout
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
+            session_start();
+        }
     }
 }
