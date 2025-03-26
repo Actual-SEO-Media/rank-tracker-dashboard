@@ -13,10 +13,15 @@ class Router {
     private $publicRoutes = ['/login']; // Always public
     private $baseUrl;
     private $config;
+    
     public function __construct() {
         // Get configuration
         $this->config = Config::getInstance();
         $this->baseUrl = $this->config->get('base_url');
+        
+        if ($this->config->isDebug()) {
+            error_log("Router initialized with base URL: " . $this->baseUrl);
+        }
     }
 
     /**
@@ -67,7 +72,7 @@ class Router {
         }
         
         // Force start the session if not already started
-        if (session_status() === PHP_SESSION_NONE) {
+        if (session_status() === PHP_SESSION_NONE && !headers_sent()) {
             session_start();
         }
         
@@ -80,12 +85,22 @@ class Router {
             // Store current URL for redirect after login
             $_SESSION['redirect_url'] = $uri;
             
-            // Get the site URL from configuration
-            $siteUrl = $this->config->get('site_url');
+            // Get the site URL from configuration and ensure it doesn't end with a slash
+            $siteUrl = rtrim($this->config->get('site_url'), '/');
             
-            // Redirect to login
-            header('Location: ' . $siteUrl . '/login');
-            exit; // Critical - must exit to prevent further execution
+            // Redirect to login, ensuring only one slash between site URL and login path
+            if (!headers_sent()) {
+                header('Location: ' . $siteUrl . '/login');
+                exit; // Critical - must exit to prevent further execution
+            } else {
+                // Headers already sent, display message instead
+                echo "<div style='text-align:center; margin-top:50px;'>";
+                echo "<h2>Authentication Required</h2>";
+                echo "<p>You need to be logged in to access this page.</p>";
+                echo "<p><a href='" . $siteUrl . "/login'>Click here to login</a></p>";
+                echo "</div>";
+                exit;
+            }
         }
         
         return true;
@@ -96,15 +111,25 @@ class Router {
      */
     public function dispatch($method, $uri) {
         if ($this->config->isDebug()) {
-            error_log("Dispatching request - Method: " . $method . ", Original URI: " . $uri);
+            error_log("Dispatching request - Method: " . $method . ", Original URI: " . ($uri ?? 'null'));
+        }
+        
+        // Ensure $uri is a string
+        if ($uri === null) {
+            $uri = '';
         }
         
         // Parse URI
         $uri = parse_url($uri, PHP_URL_PATH);
+        
+        if ($uri === null) {
+            $uri = '';
+        }
+        
         $uri = rtrim($uri, '/'); // Remove trailing slashes
         
         // Remove BASE_URL from the URI if present
-        if (strpos($uri, $this->baseUrl) === 0) {
+        if (!empty($this->baseUrl) && strpos($uri, $this->baseUrl) === 0) {
             $uri = substr($uri, strlen($this->baseUrl));
         }
         
@@ -117,13 +142,26 @@ class Router {
             error_log("Final URI to match: " . $uri);
         }
         
-        // Ignore static files
-        if (preg_match('/\.(css|js|png|jpg|jpeg|gif|svg|webp|woff|woff2|ttf|eot)$/i', $uri)) {
+        // Check if this is a static file request
+        if (preg_match('/\.(css|js|png|jpg|jpeg|gif|ico)$/i', $uri)) {
+            if ($this->config->isDebug()) {
+                error_log("Static file request - not routing: " . $uri);
+            }
             return false;
         }
         
         // Check authentication for all routes except explicitly public ones
         $this->checkAuthentication($uri);
+        
+        // Check if the method exists in routes
+        if (!isset($this->routes[$method])) {
+            if ($this->config->isDebug()) {
+                error_log("Method not supported: " . $method);
+            }
+            http_response_code(405);
+            echo "405 Method Not Allowed";
+            return;
+        }
         
         // Route matching
         foreach ($this->routes[$method] as $route => $callback) {
