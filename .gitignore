@@ -1,0 +1,63 @@
+# Environment files
+env/*
+.env
+.env.*
+!.env.example
+
+.DS_Store
+.AppleDouble
+.LSOverride
+Icon
+._*
+.DocumentRevisions-V100
+.fseventsd
+.Spotlight-V100
+.TemporaryItems
+.Trashes
+.VolumeIcon.icns
+.com.apple.timemachine.donotpresent
+
+# IDE and editor files
+.idea/
+.vscode/
+*.sublime-project
+*.sublime-workspace
+*.code-workspace
+
+# Dependencies
+/vendor/
+/node_modules/
+
+# Logs
+/logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Cache and temporary files
+*.tmp
+*.temp
+*.cache
+.sass-cache/
+.phpunit.result.cache
+
+# Backup files
+*.bak
+*.backup
+*~
+
+# Build files
+/dist/
+/build/
+
+# Uploaded files (if they should not be versioned)
+/uploads/
+
+# Database files
+*.sql
+*.sqlite
+*.sqlite3
+
+# Composer
+composer.phar
