@@ -1,5 +1,5 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
-<div class="bg-slate-50 min-h-screen p-6">
+<div class="bg-slate-50 min-h-screen p-6 print-no-padding print-white-background">
   <!-- Header Section -->
 <div class="flex flex-col items-center justify-center mb-8 text-center">
   <div>
@@ -42,7 +42,7 @@
   </div>
 </div>
 <!-- Navigation -->
- <div class="flex justify-between mb-6">
+ <div class="flex justify-between mb-6 print-hidden">
   <!-- Left side buttons -->
   <div class="flex gap-4">
     <a href="<?php echo $_ENV['SITE_URL']; ?>/positions/<?php echo $report['report_id']; ?>" class="inline-flex items-center px-4 py-2 rounded-md bg-white border border-slate-200 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors">
@@ -61,6 +61,10 @@
      <a href="<?php echo $_ENV['SITE_URL']; ?>" class="inline-flex items-center px-3 py-1.5 text-medium rounded-md bg-white border border-slate-200 text-slate-700 hover:bg-slate-50 transition-colors">
       Summary
     </a>
+    <button id="report-print-btn" class="inline-flex items-center px-4 py-2 rounded-md bg-white border border-slate-200 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors">
+      <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-slate-500" viewBox="0 0 512 512" fill="currentColor"><path d="M128 0C92.7 0 64 28.7 64 64l0 96 64 0 0-96 226.7 0L384 93.3l0 66.7 64 0 0-66.7c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0L128 0zM384 352l0 32 0 64-256 0 0-64 0-16 0-16 256 0zm64 32l32 0c17.7 0 32-14.3 32-32l0-96c0-35.3-28.7-64-64-64L64 192c-35.3 0-64 28.7-64 64l0 96c0 17.7 14.3 32 32 32l32 0 0 64c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-64zM432 248a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg>
+      Print
+    </button>
   </div>
   
   <!-- Right side buttons -->
@@ -213,7 +217,7 @@
         <div class="text-sm text-amber-600">Bing Rankings</div>
       </div>
     </div>
-
+    <div class="page-break hidden"></div>
     <!-- Charts (Span 3) -->
     <div class="col-span-1 md:col-span-3 grid grid-cols-1 md:grid-cols-2 gap-6">
       <!-- Ranking Changes Chart -->
@@ -463,6 +467,10 @@ document.addEventListener('DOMContentLoaded', function() {
                 }
             }
         }
+    });
+
+    document.getElementById('report-print-btn').addEventListener('click', () => {
+      window.print();
     });
 });
 </script>

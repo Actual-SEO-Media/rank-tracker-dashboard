@@ -1,0 +1,38 @@
+@media print {
+
+    body {
+        margin: 0;
+        padding: 0;
+        background-color: #fff !important;
+    }
+    
+    .print-white-background{
+        background-color: #fff !important;
+    }
+
+    .print-hidden{
+        display: none !important;
+    }
+
+    .print-container{
+        max-width: 100% !important;
+        padding: 0 !important;
+    }
+
+    .print-no-padding{
+        padding: 0 !important;
+    }
+
+    .print-no-border{
+        border: 0 !important;
+    }
+
+    .print-justify-content-center{
+        justify-content: center !important;
+    }
+
+    .page-break {
+        display: block !important;
+        page-break-before: always;
+    }
+}
