@@ -1,7 +1,7 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
 
 
-<div class="flex items-center mb-6">
+<div class="flex items-center mb-6 print-hidden">
      <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100"></a>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
@@ -14,7 +14,7 @@
         ?>
     </h1>
 </div>
-<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+<div class="bg-white rounded-lg shadow-md p-6 mb-6 print-no-padding">
     <!-- Tabs for different search engines -->
     <div class="mb-4 border-b">
         <ul class="flex flex-wrap -mb-px" id="seoTabs" role="tablist">
@@ -59,7 +59,7 @@
                     </div>
                 <?php else: ?>
                     <!-- Filter/search controls -->
-                    <div class="mb-4 flex flex-wrap items-center gap-4">
+                    <div class="mb-4 flex flex-wrap items-center gap-4 print-hidden">
                         <div class="relative">
                             <input type="text" id="<?php echo $key; ?>-search" placeholder="Search keywords..." 
                                    class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
