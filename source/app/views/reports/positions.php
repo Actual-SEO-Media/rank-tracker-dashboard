@@ -170,7 +170,7 @@
                     </div>
                 <?php elseif ($row['difference'] > 0): ?>
                     <div class="flex items-center">
-                        <span class="text-green-600 font-medium">+<?php echo $row['difference']; ?> ↑</span>
+                        <span class="text-green-500 font-medium text-xl">+<?php echo $row['difference']; ?> ↑</span>
                     </div>
                 <?php elseif ($row['difference'] < 0 && $row['difference'] != -100): ?>
                     <div class="flex items-center">
