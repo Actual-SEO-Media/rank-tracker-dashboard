@@ -1,10 +1,10 @@
 </main>
 
-  <footer class="bg-slate-50 border-t border-slate-200 mt-10">
-    <div class="container mx-auto px-4 py-6">
-      <div class="flex flex-col md:flex-row md:justify-between items-center">
+  <footer class="bg-slate-50 border-t border-slate-200 mt-10 print-white-background print-no-border">
+    <div class="print-container container mx-auto px-4 py-6">
+      <div class="flex flex-col md:flex-row md:justify-between items-center print-justify-content-center">
         <p class="text-slate-500 text-sm">&copy; <?php echo date('Y'); ?> ASM SEO Reports</p>
-        <div class="flex space-x-4 mt-4 md:mt-0">
+        <div class="flex space-x-4 mt-4 md:mt-0 print-hidden">
           <a href="#" class="text-slate-500 text-sm hover:text-slate-700 transition-colors">Privacy Policy</a>
           <a href="#" class="text-slate-500 text-sm hover:text-slate-700 transition-colors">Terms of Service</a>
           <a href="#" class="text-slate-500 text-sm hover:text-slate-700 transition-colors">Contact</a>

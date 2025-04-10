@@ -10,9 +10,11 @@
     
     <!-- Chart.js for data visualization -->
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    
+    <link rel="stylesheet" href="/app/assets/css/print.css" media="print"/>
 </head>
 <body class="bg-gray-50 min-h-screen">
-     <header class="bg-slate-900 relative z-10">
+  <header class="bg-slate-900 relative z-10 print-hidden">
     <div class="container mx-auto px-4">
       <div class="flex justify-between items-center h-16">
         <div class="flex items-center">
@@ -57,7 +59,7 @@
     </div>
   </header>
     
-    <main class="container mx-auto px-4 py-6">
+    <main class="container mx-auto px-4 py-6 print-container">
         <?php if (isset($page_title)): ?>
             <h1 class="text-2xl font-bold mb-6"><?php echo $page_title; ?></h1>
         <?php endif; ?>

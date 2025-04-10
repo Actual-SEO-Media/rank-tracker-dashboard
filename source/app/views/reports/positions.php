@@ -1,8 +1,23 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
 
-
-<div class="flex items-center mb-6">
-     <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100"></a>
+<div class="flex flex-col items-center justify-center mb-8 text-center hidden print-show">
+    <div>
+        <div class="flex items-center justify-center">
+            <h1 class="text-4xl font-bold text-slate-800"><?php $period = $report['report_period']; echo date('F Y', strtotime($period . '-01')); ?> Search Engine Positions</h1>
+        </div>
+        <div class="flex items-center justify-center mt-1 mb-3">
+            <span class="text-sm text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                <?php echo htmlspecialchars($report['client_domain']); ?>
+            </span>
+            <span class="mx-2 text-slate-400">•</span>
+            <span class="text-sm text-slate-500">
+                Imported <?php echo date('M j, Y', strtotime($report['import_date'])); ?>
+            </span>
+        </div>
+    </div>
+</div>
+<div class="flex items-center mb-6 print-hidden relative">
+     <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
@@ -13,8 +28,9 @@
         echo date('F Y', strtotime($period . '-01'));
         ?>
     </h1>
+    <button id="report-print-btn" class="inline-flex items-center px-4 py-2 rounded-md bg-white border border-slate-200 shadow-sm text-slate-700 hover:bg-slate-50 transition-colors absolute top-0 right-0"><svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-slate-500" viewBox="0 0 512 512" fill="currentColor"><path d="M128 0C92.7 0 64 28.7 64 64l0 96 64 0 0-96 226.7 0L384 93.3l0 66.7 64 0 0-66.7c0-17-6.7-33.3-18.7-45.3L400 18.7C388 6.7 371.7 0 354.7 0L128 0zM384 352l0 32 0 64-256 0 0-64 0-16 0-16 256 0zm64 32l32 0c17.7 0 32-14.3 32-32l0-96c0-35.3-28.7-64-64-64L64 192c-35.3 0-64 28.7-64 64l0 96c0 17.7 14.3 32 32 32l32 0 0 64c0 35.3 28.7 64 64 64l256 0c35.3 0 64-28.7 64-64l0-64zM432 248a24 24 0 1 1 0 48 24 24 0 1 1 0-48z"/></svg>Print</button>
 </div>
-<div class="bg-white rounded-lg shadow-md p-6 mb-6">
+<div class="bg-white rounded-lg shadow-md p-6 mb-6 print-no-padding">
     <!-- Tabs for different search engines -->
     <div class="mb-4 border-b">
         <ul class="flex flex-wrap -mb-px" id="seoTabs" role="tablist">
@@ -32,7 +48,7 @@
                 $count = isset($$var_name) ? count($$var_name) : 0;
             ?>
                 <li class="mr-2" role="presentation">
-                    <button class="inline-block py-2 px-4 <?php echo $first ? 'text-blue-600 hover:text-blue-800 font-medium border-b-2 border-blue-600 active' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent'; ?> rounded-t-lg" 
+                    <button class="print-gray inline-block py-2 px-4 <?php echo $first ? 'text-blue-600 hover:text-blue-800 font-medium border-b-2 border-blue-600 active' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent'; ?> rounded-t-lg" 
                             id="<?php echo $key; ?>-tab" data-tabs-target="#<?php echo $key; ?>" type="button" role="tab" 
                             aria-controls="<?php echo $key; ?>" aria-selected="<?php echo $first ? 'true' : 'false'; ?>">
                         <?php echo $label; ?> (<?php echo $count; ?>)
@@ -51,15 +67,20 @@
         foreach ($engines as $key => $label): 
             $var_name = "{$key}_data";
             $data = isset($$var_name) ? $$var_name : [];
+            $count = isset($$var_name) ? count($$var_name) : 0;
         ?>
-            <div class="<?php echo $first ? 'block' : 'hidden'; ?>" id="<?php echo $key; ?>" role="tabpanel" aria-labelledby="<?php echo $key; ?>-tab">
+            <?php if( !$first ) {?>
+                <div class="page-break hidden"></div>
+            <?php } ?>
+            <div class="<?php echo $first ? 'block' : 'hidden'; ?> print-show" id="<?php echo $key; ?>" role="tabpanel" aria-labelledby="<?php echo $key; ?>-tab">
+                <h3 class="text-2xl border-b py-2 px-4 text-gray-500 font-medium mb-6 hidden print-show"><?php echo $label; ?> (<?php echo $count; ?>)</h3>
                 <?php if (empty($data)): ?>
                     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
                         <p>No <?php echo $label; ?> rankings available for this report.</p>
                     </div>
                 <?php else: ?>
                     <!-- Filter/search controls -->
-                    <div class="mb-4 flex flex-wrap items-center gap-4">
+                    <div class="mb-4 flex flex-wrap items-center gap-4 print-hidden">
                         <div class="relative">
                             <input type="text" id="<?php echo $key; ?>-search" placeholder="Search keywords..." 
                                    class="border rounded-md px-3 py-2 focus:outline-none focus:ring-1 focus:ring-blue-500" 
@@ -331,6 +352,10 @@ function sortTable(tableId, columnIndex, isNumeric = false) {
         }
     }
 }
+
+document.getElementById('report-print-btn').addEventListener('click', () => {
+    window.print();
+});
 </script>
 
 <?php include __DIR__ . '/../layout/footer.php'; ?>
