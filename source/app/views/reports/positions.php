@@ -1,6 +1,21 @@
 <?php include __DIR__ . '/../layout/header.php'; ?>
 
-
+<div class="flex flex-col items-center justify-center mb-8 text-center hidden print-show">
+    <div>
+        <div class="flex items-center justify-center">
+            <h1 class="text-4xl font-bold text-slate-800"><?php $period = $report['report_period']; echo date('F Y', strtotime($period . '-01')); ?> Search Engine Positions</h1>
+        </div>
+        <div class="flex items-center justify-center mt-1 mb-3">
+            <span class="text-sm text-slate-500 bg-slate-100 px-2 py-0.5 rounded">
+                <?php echo htmlspecialchars($report['client_domain']); ?>
+            </span>
+            <span class="mx-2 text-slate-400">•</span>
+            <span class="text-sm text-slate-500">
+                Imported <?php echo date('M j, Y', strtotime($report['import_date'])); ?>
+            </span>
+        </div>
+    </div>
+</div>
 <div class="flex items-center mb-6 print-hidden">
      <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100"></a>
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
@@ -52,7 +67,7 @@
             $var_name = "{$key}_data";
             $data = isset($$var_name) ? $$var_name : [];
         ?>
-            <div class="<?php echo $first ? 'block' : 'hidden'; ?>" id="<?php echo $key; ?>" role="tabpanel" aria-labelledby="<?php echo $key; ?>-tab">
+            <div class="<?php echo $first ? 'block' : 'hidden'; ?> print-show" id="<?php echo $key; ?>" role="tabpanel" aria-labelledby="<?php echo $key; ?>-tab">
                 <?php if (empty($data)): ?>
                     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
                         <p>No <?php echo $label; ?> rankings available for this report.</p>

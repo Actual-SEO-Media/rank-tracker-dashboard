@@ -36,4 +36,8 @@
         display: block !important;
         page-break-before: always;
     }
+
+    .print-show{
+        display: block !important;
+    }
 }
