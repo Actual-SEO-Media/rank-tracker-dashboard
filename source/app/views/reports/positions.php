@@ -17,7 +17,7 @@
     </div>
 </div>
 <div class="flex items-center mb-6 print-hidden">
-     <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100"></a>
+     <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" class="bg-white rounded-md p-2 mr-2 hover:bg-gray-100">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-gray-500" viewBox="0 0 20 20" fill="currentColor">
             <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
@@ -47,7 +47,7 @@
                 $count = isset($$var_name) ? count($$var_name) : 0;
             ?>
                 <li class="mr-2" role="presentation">
-                    <button class="inline-block py-2 px-4 <?php echo $first ? 'text-blue-600 hover:text-blue-800 font-medium border-b-2 border-blue-600 active' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent'; ?> rounded-t-lg" 
+                    <button class="print-gray inline-block py-2 px-4 <?php echo $first ? 'text-blue-600 hover:text-blue-800 font-medium border-b-2 border-blue-600 active' : 'text-gray-500 hover:text-gray-600 hover:border-gray-300 font-medium border-b-2 border-transparent'; ?> rounded-t-lg" 
                             id="<?php echo $key; ?>-tab" data-tabs-target="#<?php echo $key; ?>" type="button" role="tab" 
                             aria-controls="<?php echo $key; ?>" aria-selected="<?php echo $first ? 'true' : 'false'; ?>">
                         <?php echo $label; ?> (<?php echo $count; ?>)
@@ -66,8 +66,13 @@
         foreach ($engines as $key => $label): 
             $var_name = "{$key}_data";
             $data = isset($$var_name) ? $$var_name : [];
+            $count = isset($$var_name) ? count($$var_name) : 0;
         ?>
+            <?php if( !$first ) {?>
+                <div class="page-break hidden"></div>
+            <?php } ?>
             <div class="<?php echo $first ? 'block' : 'hidden'; ?> print-show" id="<?php echo $key; ?>" role="tabpanel" aria-labelledby="<?php echo $key; ?>-tab">
+                <h3 class="text-2xl border-b py-2 px-4 text-gray-500 font-medium mb-6 hidden print-show"><?php echo $label; ?> (<?php echo $count; ?>)</h3>
                 <?php if (empty($data)): ?>
                     <div class="bg-yellow-100 border-l-4 border-yellow-500 text-yellow-700 p-4">
                         <p>No <?php echo $label; ?> rankings available for this report.</p>

@@ -40,4 +40,9 @@
     .print-show{
         display: block !important;
     }
+
+    .print-gray{
+        color: #6b7280 !important;
+        border-bottom-width: 0 !important;
+    }
 }
