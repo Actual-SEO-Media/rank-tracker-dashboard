@@ -124,7 +124,7 @@
                               <tbody class="bg-white divide-y divide-gray-200">
     <?php foreach ($data as $row): ?>
         <tr class="hover:bg-gray-50">
-            <td class="px-4 py-2 whitespace-nowrap"><?php echo htmlspecialchars($row['keyword']); ?></td>
+            <td class="px-4 py-2 whitespace-nowrap"><?php echo $row['keyword']; ?></td>
             <td class="px-4 py-2 whitespace-nowrap truncate max-w-xs">
                 <a href="<?php echo htmlspecialchars($row['url']); ?>" target="_blank" class="text-blue-500 hover:underline">
                     <?php echo htmlspecialchars($row['url']); ?>

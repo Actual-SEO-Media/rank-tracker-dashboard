@@ -67,6 +67,7 @@ class ImportService {
             
             // Parse CSV file
             $parsedData = $this->dataParser->parseCSVFile($filepath);
+
             if ($parsedData === false) {
                 throw new \Exception("Failed to process CSV file");
             }
