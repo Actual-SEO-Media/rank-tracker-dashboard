@@ -193,7 +193,8 @@ class RankingData {
         
         $data = [];
         while ($row = $stmt->fetch()) {
-            $data[] = htmlspecialchars($row['keyword'], ENT_QUOTES, 'UTF-8');
+            // $data[] = htmlspecialchars($row['keyword'], ENT_QUOTES, 'UTF-8');
+            $data[] = $row['keyword'];
         }
         
         return $data;
@@ -229,8 +230,8 @@ class RankingData {
 
     private function sanitizeData() {
         // Sanitize string fields
-        $this->keyword = htmlspecialchars(strip_tags($this->keyword), ENT_QUOTES, 'UTF-8');
-        $this->serp_features = htmlspecialchars(strip_tags($this->serp_features), ENT_QUOTES, 'UTF-8');
+        // $this->keyword = htmlspecialchars(strip_tags($this->keyword), ENT_QUOTES, 'UTF-8');
+        // $this->serp_features = htmlspecialchars(strip_tags($this->serp_features), ENT_QUOTES, 'UTF-8');
         
         // Sanitize URL
         if (!empty($this->url)) {
