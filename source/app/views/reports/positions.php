@@ -101,12 +101,8 @@
                             <option value="100">Top 100</option>
                         </select>
                         
-                        <button onclick="sortTable('<?php echo $key; ?>-table', 1)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
+                        <button onclick="sortByRank('<?php echo $key; ?>-table', this)" data-order="asc" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
                             Sort by Rank
-                        </button>
-                        
-                        <button onclick="sortTable('<?php echo $key; ?>-table', 3, true)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                            Sort by Change
                         </button>
                     </div>
                     
@@ -233,12 +229,6 @@ document.addEventListener('DOMContentLoaded', function() {
             this.setAttribute('aria-selected', 'true');
         });
     });
-    
-    // Initialize tables (sort by rank by default)
-    setTimeout(function() {
-        sortTable('google-table', 1);
-        // Add similar calls for other tables
-    }, 100);
 });
 
 // Table filtering function
@@ -279,77 +269,77 @@ function filterRank(tableId, rankLimit) {
     }
     
     for (let i = 0; i < rows.length; i++) {
-        const rankCell = rows[i].getElementsByTagName('td')[1];
-        if (rankCell) {
-            const rank = parseInt(rankCell.getAttribute('data-rank'));
-            if (rank <= limit) {
-                rows[i].style.display = "";
-            } else {
-                rows[i].style.display = "none";
-            }
+        const rankCell = rows[i].getElementsByTagName('td')[2];
+        const rank = parseInt(rankCell.getAttribute('data-rank'));
+
+        if( rank == 0 ){
+            rows[i].style.display = "none";
+        }
+
+        if (rank > limit) {
+            rows[i].style.display = "none";
+        } else {
+            rows[i].style.display = "";
         }
     }
 }
 
 // Table sorting function
-function sortTable(tableId, columnIndex, isNumeric = false) {
+function sortByRank(tableId, btnElem) {
     const table = document.getElementById(tableId);
     if (!table) return;
-    
-    let switching = true;
-    let rows, shouldSwitch, i;
-    let switchCount = 0;
-    let direction = "asc";
-    
-    while (switching) {
-        switching = false;
-        rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
-        
-        for (i = 0; i < (rows.length - 1); i++) {
-            shouldSwitch = false;
-            
-            const x = rows[i].getElementsByTagName('td')[columnIndex];
-            const y = rows[i + 1].getElementsByTagName('td')[columnIndex];
-            
-            let xValue, yValue;
-            
-            if (isNumeric) {
-                // For numeric columns, use data attribute
-                xValue = parseInt(x.getAttribute('data-change') || 0);
-                yValue = parseInt(y.getAttribute('data-change') || 0);
-            } else if (columnIndex === 1) {
-                // For rank column
-                xValue = parseInt(x.getAttribute('data-rank') || 0);
-                yValue = parseInt(y.getAttribute('data-rank') || 0);
-            } else {
-                // For text columns
-                xValue = x.textContent.toLowerCase();
-                yValue = y.textContent.toLowerCase();
-            }
-            
-            if (direction === "asc") {
-                if (xValue > yValue) {
-                    shouldSwitch = true;
-                    break;
+
+    const order = btnElem.getAttribute('data-order');
+
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    const rank_list = [];
+
+    for (let i = 0; i < rows.length; i++) {
+        rank_list.push({
+            'i' : i,
+            'r' : parseInt(rows[i].getElementsByTagName('td')[2].getAttribute('data-rank'))
+        })
+    }
+
+    for (let i = 0; i < rows.length - 1; i++) {
+        for (let j = i + 1 ; j < rows.length; j++) {
+            let exchange = false;
+
+            if( order == 'asc' ){
+                if( rank_list[i].r > rank_list[j].r ){
+                    exchange = true;
                 }
-            } else {
-                if (xValue < yValue) {
-                    shouldSwitch = true;
-                    break;
+            } else if( order == 'desc' ){
+                if( rank_list[i].r < rank_list[j].r ){
+                    exchange = true;
                 }
             }
-        }
-        
-        if (shouldSwitch) {
-            rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-            switching = true;
-            switchCount++;
-        } else {
-            if (switchCount === 0 && direction === "asc") {
-                direction = "desc";
-                switching = true;
+
+            if( exchange ){
+                const tempI = rank_list[i].i;
+                const tempR = rank_list[i].r;
+
+                rank_list[i].i = rank_list[j].i;
+                rank_list[i].r = rank_list[j].r;
+
+                rank_list[j].i = tempI;
+                rank_list[j].r = tempR;
             }
         }
+    }
+
+    let newHtml = '';
+    
+    for (let i = 0; i < rows.length; i++) {
+        newHtml += rows[rank_list[i].i].outerHTML;
+    }
+
+    table.getElementsByTagName('tbody')[0].innerHTML = newHtml;
+
+    if( order == 'asc' ){
+        btnElem.setAttribute('data-order', 'desc');
+    } else if( order == 'desc' ){
+        btnElem.setAttribute('data-order', 'asc');
     }
 }
 
