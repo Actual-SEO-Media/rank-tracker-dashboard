@@ -104,10 +104,6 @@
                         <button onclick="sortByRank('<?php echo $key; ?>-table', this)" data-order="asc" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
                             Sort by Rank
                         </button>
-                        
-                        <button onclick="sortByChange('<?php echo $key; ?>-table', this)" class="bg-gray-100 hover:bg-gray-200 text-gray-700 px-3 py-2 rounded-md text-sm">
-                            Sort by Change
-                        </button>
                     </div>
                     
                     <div class="overflow-x-auto">
@@ -345,13 +341,6 @@ function sortByRank(tableId, btnElem) {
     } else if( order == 'desc' ){
         btnElem.setAttribute('data-order', 'asc');
     }
-}
-
-function sortByChange(tableId, btnElem) {
-    const table = document.getElementById(tableId);
-    if (!table) return;
-    
-    console.log(123);
 }
 
 document.getElementById('report-print-btn').addEventListener('click', () => {
