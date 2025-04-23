@@ -105,7 +105,8 @@ class Report {
     public function getClientList() {
         $query = "SELECT DISTINCT client_domain FROM " . $this->table . " ORDER BY client_domain";
         $stmt = $this->conn->query($query);
-        return $stmt;
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
     
     // Get baseline report for a client

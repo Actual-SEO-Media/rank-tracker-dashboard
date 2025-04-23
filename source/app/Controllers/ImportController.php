@@ -2,11 +2,14 @@
 namespace App\Controllers;
 
 use App\Services\ImportService;
+use App\Models\Report;
 
 class ImportController {
+    private $reportModel;
     private $importService;
     
     public function __construct() {
+        $this->reportModel = new Report();
         $this->importService = new ImportService();
     }
     
@@ -27,6 +30,9 @@ class ImportController {
             $domain = $result['domain'] ?? $domain;
             $report_id = $result['report_id'] ?? null;
         }
+
+        $clientList = $this->reportModel->getClientList();
+
         
         // Include the view
         include __DIR__ . '/../views/import/index.php';

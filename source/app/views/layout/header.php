@@ -12,6 +12,7 @@
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     
     <link rel="stylesheet" href="/app/assets/css/print.css" media="print"/>
+    <link href="/app/assets/css/select2.min.css" rel="stylesheet" />
 </head>
 <body class="bg-gray-50 min-h-screen">
   <header class="bg-slate-900 relative z-10 print-hidden">
