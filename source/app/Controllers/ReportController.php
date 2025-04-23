@@ -37,18 +37,15 @@ class ReportController {
         $period = $this->reportModel->report_period;
         $domain = $this->reportModel->client_domain;
 
-        $prev_period = date('Y-m', strtotime($period . '-01 -1 month'));
-        $prev_report_id = $this->getReportIdByPeriod($domain, $prev_period);
+        $prev_report = $this->reportModel->getPrevReportByPeriod($domain, $period);
+        $next_report = $this->reportModel->getNextReportByPeriod($domain, $period);
 
-        $next_period = date('Y-m', strtotime($period . '-01 +1 month'));
-        $next_report_id = $this->getReportIdByPeriod($domain, $next_period);
-
-        $available_periods = $this->getAvailablePeriods($domain);
+        $available_periods = $this->reportModel->getAvailablePeriods($domain);
         
         // Add to data going to the view
         $navigation = [
-            'prev_report_id' => $prev_report_id,
-            'next_report_id' => $next_report_id,
+            'prev_report' => $prev_report,
+            'next_report' => $next_report,
             'available_periods' => $available_periods
         ];
         
@@ -184,17 +181,5 @@ class ReportController {
         return array_filter($data, function($row) {
             return $row['difference'] == EngineConfig::DROPPED;
         });
-    }
-    
-    // TODO: Implement the following methods
-
-    private function getReportIdByPeriod($domain, $period) {
-        // Implementation needed
-        return null;
-    }
-    
-    private function getAvailablePeriods($domain) {
-        // Implementation needed
-        return [];
     }
 }

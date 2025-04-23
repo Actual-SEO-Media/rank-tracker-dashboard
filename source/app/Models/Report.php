@@ -187,4 +187,28 @@ class Report {
         $this->is_baseline = $isBaseline ? 1 : 0;
         return $this->update();
     }
+
+    public function getPrevReportByPeriod($domain, $period) {
+        $query = "SELECT report_period as period, report_id 
+                FROM " . $this->table . " 
+                WHERE client_domain = ? AND report_period < ?
+                ORDER BY report_period DESC 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$domain, $period]);
+        return $stmt->fetch();
+    }
+
+    public function getNextReportByPeriod($domain, $period) {
+        $query = "SELECT report_period as period, report_id 
+                FROM " . $this->table . " 
+                WHERE client_domain = ? AND report_period > ?
+                ORDER BY report_period DESC 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$domain, $period]);
+        return $stmt->fetch();
+    }
 }

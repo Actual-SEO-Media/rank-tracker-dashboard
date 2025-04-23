@@ -70,22 +70,35 @@
   <!-- Right side buttons -->
   <div class="flex gap-4">
     <!-- Report Navigation -->
-    <div class="flex rounded-lg border border-slate-200 overflow-hidden">
-      <a href="<?php echo $navigation['prev_report_id'] ? $_ENV['SITE_URL'] . '/view_report/' . $navigation['prev_report_id'] : '#'; ?>"
-    class="flex items-center justify-center px-2 py-1 bg-white <?php echo !$navigation['prev_report_id'] ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'; ?>">
+    <div class="flex">
+      <a href="<?php echo $navigation['prev_report'] ? $_ENV['SITE_URL'] . '/details/' . $navigation['prev_report']['report_id'] : '#'; ?>" class="flex items-center justify-center px-2 py-1 bg-white rounded-l-lg border border-r-0 border-slate-200 <?php echo !$navigation['prev_report'] ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'; ?>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clip-rule="evenodd" />
         </svg>
       </a>
-      <button type="button" class="px-3 py-1 bg-white hover:bg-slate-50 text-sm text-slate-700 border-l border-r border-slate-200"
-    onclick="document.getElementById('period-selector').classList.toggle('hidden')">
-    <?php echo date('M Y', strtotime($period . '-01')); ?>
-        <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
-        </svg>
-      </button>
-      <a href="<?php echo $navigation['next_report_id'] ? $_ENV['SITE_URL'] . '/view_report/' . $navigation['next_report_id'] : '#'; ?>"
-    class="flex items-center justify-center px-2 py-1 bg-white <?php echo !$navigation['next_report_id'] ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'; ?>">
+
+      <div class="relative">
+        <button id="available-periods-btn" type="button" class="px-3 py-1 bg-white hover:bg-slate-50 text-sm text-slate-700 border border-slate-200 flex items-center h-full w-[120px] relative">
+          <?php echo date('M Y', strtotime($period . '-01')); ?>
+          <svg xmlns="http://www.w3.org/2000/svg" class="inline-block h-4 w-4 ml-1" fill="none" viewBox="0 0 24 24" stroke="currentColor" style="position:absolute;top:12px;right:12px;">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
+          </svg>
+        </button>
+
+        <div id="available-periods-list" class="absolute left-0 mt-1 w-48 bg-white border border-slate-200 rounded-lg shadow-lg z-10 w-[120px] hidden">
+          <ul class="text-sm text-slate-700">
+            <?php
+              foreach( $navigation['available_periods'] as $item){
+            ?>
+                <li><a href="<?php echo $_ENV['SITE_URL'] . '/details/' . $item['report_id']; ?>" class="block px-4 py-2 hover:bg-slate-100 <?php echo $item['report_id'] == $report['report_id'] ? 'bg-slate-100' : ''; ?>"><?php echo date('M Y', strtotime($item['period'] . '-01')); ?></a></li>
+            <?php
+              }
+            ?>
+          </ul>
+        </div>
+      </div>
+
+      <a href="<?php echo $navigation['next_report'] ? $_ENV['SITE_URL'] . '/details/' . $navigation['next_report']['report_id'] : '#'; ?>" class="flex items-center justify-center px-2 py-1 bg-white rounded-r-lg border border-l-0 border-slate-200 <?php echo !$navigation['next_report'] ? 'opacity-50 cursor-not-allowed' : 'hover:bg-slate-50'; ?>">
         <svg xmlns="http://www.w3.org/2000/svg" class="h-4 w-4 text-slate-500" viewBox="0 0 20 20" fill="currentColor">
           <path fill-rule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clip-rule="evenodd" />
         </svg>
@@ -471,6 +484,11 @@ document.addEventListener('DOMContentLoaded', function() {
 
     document.getElementById('report-print-btn').addEventListener('click', () => {
       window.print();
+    });
+
+    document.getElementById('available-periods-btn').addEventListener('click', function () {
+      const list = document.getElementById('available-periods-list');
+      list.classList.toggle('hidden');
     });
 });
 </script>
