@@ -49,4 +49,10 @@ $(document).ready(function () {
       }
     }
   });
+
+  $('#client_domain').select2({
+    placeholder: "Select or create a new domain",
+    allowClear: true,
+    tags: true
+  });
 });

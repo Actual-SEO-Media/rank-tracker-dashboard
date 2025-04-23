@@ -105,7 +105,8 @@ class Report {
     public function getClientList() {
         $query = "SELECT DISTINCT client_domain FROM " . $this->table . " ORDER BY client_domain";
         $stmt = $this->conn->query($query);
-        return $stmt;
+        $stmt->execute();
+        return $stmt->fetchAll();
     }
     
     // Get baseline report for a client
@@ -186,5 +187,29 @@ class Report {
         // Set current report baseline status
         $this->is_baseline = $isBaseline ? 1 : 0;
         return $this->update();
+    }
+
+    public function getPrevReportByPeriod($domain, $period) {
+        $query = "SELECT report_period as period, report_id 
+                FROM " . $this->table . " 
+                WHERE client_domain = ? AND report_period < ?
+                ORDER BY report_period DESC 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$domain, $period]);
+        return $stmt->fetch();
+    }
+
+    public function getNextReportByPeriod($domain, $period) {
+        $query = "SELECT report_period as period, report_id 
+                FROM " . $this->table . " 
+                WHERE client_domain = ? AND report_period > ?
+                ORDER BY report_period DESC 
+                LIMIT 1";
+        
+        $stmt = $this->conn->prepare($query);
+        $stmt->execute([$domain, $period]);
+        return $stmt->fetch();
     }
 }

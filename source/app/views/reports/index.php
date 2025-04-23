@@ -157,7 +157,7 @@
                                 <?php endif; ?>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center">
-                                <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $reports[0]['report_id']; ?>" 
+                                <a href="<?php echo $_ENV['SITE_URL']; ?>/details/<?php echo $report['report_id']; ?>" 
                                    class="text-blue-600 hover:text-blue-900 bg-blue-50 hover:bg-blue-100 px-3 py-1 rounded-md text-sm font-medium">
                                     View Details
                                 </a>
